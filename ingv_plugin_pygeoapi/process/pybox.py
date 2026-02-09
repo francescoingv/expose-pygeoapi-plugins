@@ -721,8 +721,10 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
                 'mediaType': 'application/json'
             }
 
+        LOGGER.debug(f'user requested the following outputs: {produced_outputs}')
         # --- CASE 1: ONE OUTPUT ONLY ---
         if len(produced_outputs) == 1:
+            LOGGER.debug(f'user requested single output')
             output_id, output = next(iter(produced_outputs.items()))
             mimetype = output['mediaType']
 
@@ -730,36 +732,50 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
 
             # decode base64 if needed
             if output.get('encoding') == 'base64':
+                LOGGER.debug(f'output.get("encoding") == "base64"')
                 body = base64.b64decode(value)
             else:
+                LOGGER.debug(f'value = {value}')
                 # JSON or text
                 if isinstance(value, (dict, list)):
+                    LOGGER.debug(f'isinstance(value, (dict, list) == True')
                     import json
                     body = json.dumps(value).encode('utf-8')
                 else:
+                    LOGGER.debug(f'isinstance(value, (dict, list) == False')
                     body = str(value).encode('utf-8')
 
+            LOGGER.debug(f'returning: mimetype = {mimetype}')
+            LOGGER.debug(f'returning: process_outputs = {body}')
             return mimetype, body
 
         # --- CASE 2: MULTIPLE OUTPUT -> multipart/related ---
+        LOGGER.debug(f'user requested multiple outputs')
         boundary = f"boundary-{uuid.uuid4()}"
         parts = []
 
         for output_id, output in produced_outputs.items():
+            LOGGER.debug(f'---> preparing output for output_id = {output_id} <---')
             media_type = output['mediaType']
+            LOGGER.debug(f'media_type = {media_type}')
             value = output['value']
 
             # prepare payload
             if output.get('encoding') == 'base64':
+                LOGGER.debug(f'output.get("encoding") == "base64"')
                 payload = base64.b64decode(value)
                 transfer_encoding = "binary"
             else:
+                LOGGER.debug(f'value = {value}')
                 if isinstance(value, (dict, list)):
+                    LOGGER.debug(f'isinstance(value, (dict, list) == True')
                     import json
                     payload = json.dumps(value).encode('utf-8')
                 else:
+                    LOGGER.debug(f'isinstance(value, (dict, list) == False')
                     payload = str(value).encode('utf-8')
                 transfer_encoding = "8bit"
+            LOGGER.debug(f'payload = {payload}')
 
             part = (
                 f"--{boundary}\r\n"
@@ -777,6 +793,8 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
         body = b"".join(parts)
         mimetype = f'multipart/related; boundary="{boundary}"'
 
+        LOGGER.debug(f'returning: mimetype = {mimetype}')
+        LOGGER.debug(f'returning: process_outputs = {body}')
         return mimetype, body
 
     def prepare_input(self, data, working_dir, outputs):
