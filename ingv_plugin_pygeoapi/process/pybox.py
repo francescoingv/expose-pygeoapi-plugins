@@ -385,35 +385,50 @@ PROCESS_METADATA = {
         'href': 'https://example.org/process',
         'hreflang': 'en-US'
       }],
-    'example': {
-        'inputs': {
-            'lon': 90.88,
-            'lat': 14.47,
-            'l0': 150,
-            'h0': 150,
-            'theta0': 500,
-            'multiple_values': [{'eps0': 0.01, 'rhos': 1000, 'ds': 0.0001}],
-            'dt': 0.5,
-            'margin': 5000,
-        },
-        'outputs': {
-            'input_data': {
-                'transmissionMode': 'value'
+    'example': [
+        {
+            'inputs': {
+                'lon': 90.88,
+                'lat': 14.47,
+                'l0': 150,
+                'h0': 150,
+                'theta0': 500,
+                'multiple_values': [{'eps0': 0.01, 'rhos': 1000, 'ds': 0.0001}],
+                'dt': 0.5,
+                'margin': 5000,
             },
-            'dem': {
-                'transmissionMode': 'value'
-            },
-            'invasion_map': {
-                'transmissionMode': 'value'
-            },
-            'spatial_evolution': {
-                'transmissionMode': 'value'
-            },
-            'deposit_thickness': {
-                'transmissionMode': 'value'
+            'outputs': {
+                'input_data': {
+                    'transmissionMode': 'value'
+                },
+                'dem': {
+                    'transmissionMode': 'value'
+                },
+                'invasion_map': {
+                    'transmissionMode': 'value'
+                },
+                'spatial_evolution': {
+                    'transmissionMode': 'value'
+                },
+                'deposit_thickness': {
+                    'transmissionMode': 'value'
+                }
             }
+        },
+        {
+            # curl -k -L -X POST "https://epos_geoinquire.pi.ingv.it/epos_pygeoapi/processes/pybox/execution" -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" :  -90.88, "lat" : 15.47, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : ["input_data", "dem", "spatial_evolution"] }'
+            # per asincrono aggiungere: -H "Prefer: respond-async"
+            'curl_example': (
+                "curl -k -L -X POST "
+                "\"https://epos_geoinquire.pi.ingv.it/epos_pygeoapi/processes/pybox/execution\" "
+                "-H \"Content-Type: application/json\" "
+                "-d '{\"inputs\":{\"lon\":-90.88,\"lat\":15.47,\"l0\":150,\"h0\":150,"
+                "\"theta0\":500,\"multiple_values\":[{\"eps0\":0.01,\"rhos\":1000,\"ds\":0.0001}],"
+                "\"dt\":0.5,\"margin\":5000},"
+                "\"outputs\":[\"input_data\",\"dem\",\"spatial_evolution\"]}'"
+            )
         }
-    }
+    ]
     # curl localhost:5000/processes/pybox/execution 
     #       -H 'Content-Type: application/json' 
     #       -d '{ "inputs" : { "lon" :  90.88, "lat" : 14.47, "l0" : 150, "h0" : 150, 
@@ -421,8 +436,6 @@ PROCESS_METADATA = {
     #                          "dt" : 0.5, "margin" : 5000 }}'
     # curl localhost:5000/processes/pybox/execution -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" :  -90.88, "lat" : 15.47, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : ["input_data", "dem", "spatial_evolution"] }'
     # curl localhost:5000/processes/pybox/execution -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" :  -90.88, "lat" : 15.47, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : {"input_data": { "transmissionMode": "value" }, "dem" : { "transmissionMode": "value" }, "spatial_evolution": { "transmissionMode": "value" } } }'
-    # curl -k -L -X POST "https://epos_geoinquire.pi.ingv.it/epos_pygeoapi/processes/pybox/execution" -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" :  -90.88, "lat" : 15.47, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : ["input_data", "dem", "spatial_evolution"] }'
-    # per asincrono aggiungere: -H "Prefer: respond-async"
     #
 }
 
