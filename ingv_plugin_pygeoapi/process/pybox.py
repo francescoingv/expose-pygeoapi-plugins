@@ -721,7 +721,7 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
                 'mediaType': 'application/json'
             }
 
-        LOGGER.debug(f'user requested the following outputs: {produced_outputs}')
+        LOGGER.debug(f'user requested the following outputs: {requested_outputs}')
         # --- CASE 1: ONE OUTPUT ONLY ---
         if len(produced_outputs) == 1:
             LOGGER.debug(f'user requested single output')
