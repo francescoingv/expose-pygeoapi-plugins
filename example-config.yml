@@ -72,8 +72,9 @@ server:
 #        name:  'pygeoapi_ingv_extensions.process.manager.base.BaseManager'
     
 logging:
-    level: DEBUG #ERROR
-    logfile: ingv_plugin_pygeoapi.log
+#    level: DEBUG
+#    logfile: ingv_plugin_pygeoapi.log
+    level: ERROR
     #logfile: /tmp/pygeoapi.log
 
 metadata:

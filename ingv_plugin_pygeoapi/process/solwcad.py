@@ -36,9 +36,249 @@ from pygeoapi.process.base import (
     ProcessorExecuteError,
     #    ProcessorGenericError,
 )
-from ingv_plugin_pygeoapi.process.base_remote_execution import BaseRemoteExecutionProcessor
+from ingv_plugin_pygeoapi.process.base_remote_execution import (
+    BaseRemoteExecutionProcessor,
+    validate_json,
+)
 
 LOGGER = logging.getLogger(__name__)
+
+INPUT_SCHEMA = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/conduit_plugin_schema.json",
+  "title": "Conduit Input Schema",
+  "description": "Schema for Conduit plugin inputs",
+  "type": "object",
+  "required": ["swinput.data", "sw.data"],
+  "additionalProperties": False,
+  "properties": {
+    "swinput.data": {
+      'title': 'Desired computation',
+      'description': 'Specifics for the desired computation.',
+      "type": "object",
+      'oneOf': [
+        {
+          'description':
+            'The computation is performed at user-defined P-T '
+            'conditions in sw.data. H2O and CO2 contents in '
+            'sw.data refer to total amounts in the two-phase '
+            'magma, or to (mass of volatile component) / '
+            '(mass of melt + fluid phases). '
+            'SOLWCAD computes the partitioning of the two '
+            'volatiles in the fluid and melt phases for '
+            'user-defined composition. '
+            'Computations are performed from item ndat1 to '
+            'item ndat2 (only one computation is performed if '
+            'ndat1 = ndat2).',
+          'required': [
+            'ndat1',
+            'ndat2',
+            'kl'
+          ],
+          "additionalProperties": False,
+          'properties': {
+            'ndat1': {
+              'type': 'integer',
+              'description':
+                'Computations are performed from item '
+                'ndat1 of sw.data'
+            },
+            'ndat2': {
+              'type': 'integer',
+              'description':
+                'Computations are performed up to item '
+                'ndat2 of sw.data'
+            },
+            'kl': {
+              'type': 'integer',
+              'enum': [0]  # the only one accepted value
+            }
+            # not used for kl = 0:
+            # 'iopen', 'fopen', 'dt', 'tlimit'
+          }
+        },
+        {
+          'description':
+            'The computation is performed with reference to '
+            'item ndat1 in sw.data, at constant user-defined '
+            'T and for pressure from user-defined P to '
+            'atmospheric. At each pressure, a computation '
+            'similar to the one for kl=0 is performed.',
+          'required': [
+            'ndat1',
+            'kl',
+            'iopen'
+          ],
+          'properties': {
+            'ndat1': {
+              'type': 'integer',
+              'description':
+                'Computations are performed from item '
+                'ndat1 of sw.data'
+            },
+            'kl': {
+              'type': 'integer',
+              'enum': [1],  # the only one accepted value
+            },
+            'iopen': {
+              'type': 'integer',
+              'enum': [0, 1],
+              'description':
+                '0 for closed-system calculations, '
+                '1 for open system calculations.'
+            },
+            'fopen': {
+              'type': 'string',
+              'pattern':
+                r"^([+-]?([\d]+\.|[\d]*\.[\d]+))"
+                r"([Dd][+-]?[\d]+)?$",
+              'description':
+                'Only used with iopen =1. It specifies '
+                'the weight fraction of fluid phase lost '
+                'at each subsequent computation step.'
+            }
+            # not used for kl = 0:
+            # 'dt', 'tlimit'
+          }
+        },
+        {
+          'description':
+            'Same as for kl=1, but for fixed P (from sw.data) '
+            'and T from the item ndat1 in sw.data to a '
+            'user-defined value tlimit, with user-defined '
+            'T-steps.',
+          'required': [
+            'ndat1',
+            'kl',
+            'iopen',
+            'dt',
+            'tlimit'
+            # 'fopen' is not always required, only if iopen=1
+          ],
+          'properties': {
+            'ndat1': {
+              'type': 'integer',
+              'description':
+                'Computations are performed on item ndat1 '
+                'of sw.data'
+            },
+            'kl': {
+              'type': 'integer',
+              'enum': [2],  # the only one accepted value
+            },
+            'iopen': {
+              'type': 'integer',
+              'enum': [0, 1],
+              'description':
+                '0 for closed-system calculations, '
+                '1 for open system calculations.'
+            },
+            'fopen': {
+              'type': 'string',
+              'pattern':
+                r"^([+-]?([\d]+\.|[\d]*\.[\d]+))"
+                r"([Dd][+-]?[\d]+)?$",
+              'description':
+                'Only used with iopen =1. It specifies '
+                'the weight fraction of fluid phase lost '
+                'at each subsequent computation step.'
+            },
+            'dt': {
+              'type': 'string',
+              'pattern':
+                r"^([+-]?([\d]+\.|[\d]*\.[\d]+))"
+                r"([Dd][+-]?[\d]+)?$",
+              'description':
+                'The length of the T-steps (either '
+                'positive or negative).'
+            },
+            'tlimit': {
+              'type': 'string',
+              'pattern':
+                r"^([+-]?([\d]+\.|[\d]*\.[\d]+))"
+                r"([Dd][+-]?[\d]+)?$",
+              'description':
+                'The temperature up to which separate '
+                'computations are performed. It can be '
+                'either higher (dt>0) or lower (dt<0) '
+                'than T.'
+            }
+          }
+        },
+        {
+          'description':
+            'H2O and CO2 in sw.data items represent amounts '
+            'dissolved in the melt phase. For user-defined '
+            'melt composition and temperature, SOLWCAD '
+            'returns the equilibrium pressure and composition '
+            'of the coexisting fluid phase. Computations are '
+            'performed from item ndat1 to item ndat2 (only '
+            'one computation is performed if ndat1=ndat2 ). '
+            'This kind of computation is commonly used in the '
+            'analysis of melt inclusion data.',
+          'required': [
+            'ndat1',
+            'ndat2',
+            'kl'
+          ],
+          'properties': {
+            'ndat1': {
+              'type': 'integer',
+              'description':
+                'Computations are performed on item ndat1 '
+                'of sw.data'
+            },
+            'ndat2': {
+              'type': 'integer',
+              'description':
+                'Computations are performed up to item '
+                'ndat2 of sw.data'
+            },
+            'kl': {
+              'type': 'integer',
+              'enum': [-1],   # the only one accepted value
+            }
+            # not used for kl = 0:
+            # 'iopen', 'fopen', 'dt', 'tlimit'
+          }
+        }
+      ]
+    },
+    "sw.data": {
+      'title': 'User data',
+      'description':
+        'user-defined conditions in terms of pressure, temperature, '
+        'and composition, each one arranged on a single item. Each '
+        'item contains the followings: pressure (Pa); '
+        'temperature (K); H2O content (wt fraction)**; '
+        'CO2 content (wt fraction)**; the following ten quantities '
+        'specify the volatile-free melt composition (wt fraction)***, '
+        'in the following order: SiO2; TiO2; Al2O3; Fe2O3; FeO; MnO; '
+        'MgO; CaO; Na2O; K2O. '
+        '**H2O and CO2 contents may refer to i) total amounts in the '
+        'two-phase magma, equal to (mass of volatile in the '
+        'fluid + mass of volatile dissolved in the melt) / (mass of '
+        'the gas phase + mass of the melt phase); or ii) the amounts '
+        'dissolved in the melt phase, that is, (mass of volatile '
+        'dissolved in the melt) / (mass of the melt phase). The '
+        'specific choice is determined by the parameter kl in '
+        'swinput.data.',
+      'type': 'array',
+      'minItems': 1,
+      'items': {
+        'type': 'array',
+        'minItems': 14,
+        'maxItems': 14,
+        'items': {
+          'type': 'string',
+          'pattern':
+            r"^([+-]?([\d]+\.|[\d]*\.[\d]+))"
+            r"([Dd][+-]?[\d]+)?$",
+        }
+      }
+    }
+  }
+}
 
 #: Process metadata and description
 PROCESS_METADATA = {
@@ -55,235 +295,18 @@ PROCESS_METADATA = {
     'keywords': ['Fortran code', 'saturation surface', 'other keywords...'],
     'inputs': {
         'swinput.data': {
-            'title': 'Desired computation',
-            'description': 'Specifics for the desired computation.',
-            'minOccurs': 1,
-            'maxOccurs': 1,
-            'schema': {
-                'oneOf': [
-                    {
-                        'type': 'object',
-                        'description':
-                            'The computation is performed at user-defined P-T '
-                            'conditions in sw.data. H2O and CO2 contents in '
-                            'sw.data refer to total amounts in the two-phase '
-                            'magma, or to (mass of volatile component) / '
-                            '(mass of melt + fluid phases). '
-                            'SOLWCAD computes the partitioning of the two '
-                            'volatiles in the fluid and melt phases for '
-                            'user-defined composition. '
-                            'Computations are performed from item ndat1 to '
-                            'item ndat2 (only one computation is performed if '
-                            'ndat1 = ndat2).',
-                        'required': [
-                            'ndat1',
-                            'ndat2',
-                            'kl'
-                        ],
-                        'properties': {
-                            'ndat1': {
-                                'type': 'integer',
-                                'description':
-                                    'Computations are performed from item '
-                                    'ndat1 of sw.data'
-                              },
-                            'ndat2': {
-                                'type': 'integer',
-                                'description':
-                                    'Computations are performed up to item '
-                                    'ndat2 of sw.data'
-                            },
-                            'kl': {
-                                'type': 'integer',
-                                'enum': [0]  # the only one accepted value
-                            }
-                            # not used for kl = 0:
-                            # 'iopen', 'fopen', 'dt', 'tlimit'
-                        }
-                    },
-                    {
-                        'type': 'object',
-                        'description':
-                            'The computation is performed with reference to '
-                            'item ndat1 in sw.data, at constant user-defined '
-                            'T and for pressure from user-defined P to '
-                            'atmospheric. At each pressure, a computation '
-                            'similar to the one for kl=0 is performed.',
-                        'required': [
-                            'ndat1',
-                            'kl',
-                            'iopen'
-                        ],
-                        'properties': {
-                            'ndat1': {
-                                'type': 'integer',
-                                'description':
-                                    'Computations are performed from item '
-                                    'ndat1 of sw.data'
-                            },
-                            'kl': {
-                                'type': 'integer',
-                                'enum': [1],  # the only one accepted value
-                            },
-                            'iopen': {
-                                'type': 'integer',
-                                'enum': [0, 1],
-                                'description':
-                                    '0 for closed-system calculations, '
-                                    '1 for open system calculations.'
-                            },
-                            'fopen': {
-                                'type': 'string',
-                                'pattern':
-                                    r"^([+-]?([\d]+\.|[\d]*\.[\d]+))"
-                                    r"([Dd][+-]?[\d]+)?$",
-                                'description':
-                                    'Only used with iopen =1. It specifies '
-                                    'the weight fraction of fluid phase lost '
-                                    'at each subsequent computation step.'
-                            }
-                            # not used for kl = 0:
-                            # 'dt', 'tlimit'
-                        }
-                    },
-                    {
-                        'type': 'object',
-                        'description':
-                            'Same as for kl=1, but for fixed P (from sw.data) '
-                            'and T from the item ndat1 in sw.data to a '
-                            'user-defined value tlimit, with user-defined '
-                            'T-steps.',
-                        'required': [
-                            'ndat1',
-                            'kl',
-                            'iopen',
-                            'dt',
-                            'tlimit'
-                            # 'fopen' is not always required, only if iopen=1
-                        ],
-                        'properties': {
-                            'ndat1': {
-                                'type': 'integer',
-                                'description':
-                                    'Computations are performed on item ndat1 '
-                                    'of sw.data'
-                            },
-                            'kl': {
-                                'type': 'integer',
-                                'enum': [2],  # the only one accepted value
-                            },
-                            'iopen': {
-                                'type': 'integer',
-                                'enum': [0, 1],
-                                'description':
-                                    '0 for closed-system calculations, '
-                                    '1 for open system calculations.'
-                            },
-                            'fopen': {
-                                'type': 'string',
-                                'pattern':
-                                    r"^([+-]?([\d]+\.|[\d]*\.[\d]+))"
-                                    r"([Dd][+-]?[\d]+)?$",
-                                'description':
-                                    'Only used with iopen =1. It specifies '
-                                    'the weight fraction of fluid phase lost '
-                                    'at each subsequent computation step.'
-                            },
-                            'dt': {
-                                'type': 'string',
-                                'pattern':
-                                    r"^([+-]?([\d]+\.|[\d]*\.[\d]+))"
-                                    r"([Dd][+-]?[\d]+)?$",
-                                'description':
-                                    'The length of the T-steps (either '
-                                    'positive or negative).'
-                            },
-                            'tlimit': {
-                                'type': 'string',
-                                'pattern':
-                                    r"^([+-]?([\d]+\.|[\d]*\.[\d]+))"
-                                    r"([Dd][+-]?[\d]+)?$",
-                                'description':
-                                    'The temperature up to which separate '
-                                    'computations are performed. It can be '
-                                    'either higher (dt>0) or lower (dt<0) '
-                                    'than T.'
-                            }
-                        }
-                    },
-                    {
-                        'type': 'object',
-                        'description':
-                            'H2O and CO2 in sw.data items represent amounts '
-                            'dissolved in the melt phase. For user-defined '
-                            'melt composition and temperature, SOLWCAD '
-                            'returns the equilibrium pressure and composition '
-                            'of the coexisting fluid phase. Computations are '
-                            'performed from item ndat1 to item ndat2 (only '
-                            'one computation is performed if ndat1=ndat2 ). '
-                            'This kind of computation is commonly used in the '
-                            'analysis of melt inclusion data.',
-                        'required': [
-                            'ndat1',
-                            'ndat2',
-                            'kl'
-                        ],
-                        'properties': {
-                            'ndat1': {
-                                'type': 'integer',
-                                'description':
-                                    'Computations are performed on item ndat1 '
-                                    'of sw.data'
-                            },
-                            'ndat2': {
-                                'type': 'integer',
-                                'description':
-                                    'Computations are performed up to item '
-                                    'ndat2 of sw.data'
-                            },
-                            'kl': {
-                                'type': 'integer',
-                                'enum': [-1],   # the only one accepted value
-                            }
-                            # not used for kl = 0:
-                            # 'iopen', 'fopen', 'dt', 'tlimit'
-                        }
-                    }
-                ]
-            }
+          'title': INPUT_SCHEMA['properties']['swinput.data']['title'],
+          'description': INPUT_SCHEMA['properties']['swinput.data']['description'],
+          'schema': INPUT_SCHEMA['properties']['swinput.data'],
+          'minOccurs': 1,
+          'maxOccurs': 1
         },
         'sw.data': {
-            'title': 'User data',
-            'description':
-                'user-defined conditions in terms of pressure, temperature, '
-                'and composition, each one arranged on a single item. Each '
-                'item contains the followings: pressure (Pa); '
-                'temperature (K); H2O content (wt fraction)**; '
-                'CO2 content (wt fraction)**; the following ten quantities '
-                'specify the volatile-free melt composition (wt fraction)***, '
-                'in the following order: SiO2; TiO2; Al2O3; Fe2O3; FeO; MnO; '
-                'MgO; CaO; Na2O; K2O. '
-                '**H2O and CO2 contents may refer to i) total amounts in the '
-                'two-phase magma, equal to (mass of volatile in the '
-                'fluid + mass of volatile dissolved in the melt) / (mass of '
-                'the gas phase + mass of the melt phase); or ii) the amounts '
-                'dissolved in the melt phase, that is, (mass of volatile '
-                'dissolved in the melt) / (mass of the melt phase). The '
-                'specific choice is determined by the parameter kl in '
-                'swinput.data.',
-            'minOccurs': 1,
-            'maxOccurs': 'unbounded',
-            'schema': {
-                'type': 'array',
-                'minItems': 14,
-                'maxItems': 14,
-                'items': {
-                    'type': 'string',
-                    'pattern':
-                        r"^([+-]?([\d]+\.|[\d]*\.[\d]+))"
-                        r"([Dd][+-]?[\d]+)?$",
-                }
-            }
+          'title': INPUT_SCHEMA['properties']['sw.data']['title'],
+          'description': INPUT_SCHEMA['properties']['sw.data']['description'],
+          'schema': INPUT_SCHEMA['properties']['sw.data'],
+          'minOccurs': 1,
+          'maxOccurs': 1
         }
     },
     'outputs': {
@@ -312,79 +335,11 @@ PROCESS_METADATA = {
                     'type': 'string',
                     'pattern':
                         r"^([+-]?(?:[[:digit:]]+\.|[[:digit:]]*\."
-                        r"[[:digit:]]+))(?:[Dd][+-]?[[:digit:]]+)?$"
+                        r"[[:digit:]]+))(?:[Dd][+-]?[[:digit:]]+)?$",
+                    'contentMediaType': 'application/json'
                 }
             }
         }
-        #    ,
-        #    'solwcad.json': {
-        #      'description':
-        #        'An array of objects, each containing '
-        #        'the calculated properties.',
-        #      'minOccurs': 1,
-        #      'maxOccurs': 'unbounded',
-        #      'schema': {
-        #        'type': 'object',
-        #        'properties': {
-        #          'Pressure (Mpa)': {
-        #            'type': 'number'
-        #          },
-        #          'Temperature (K)': {
-        #            'type': 'number'
-        #          },
-        #          'H2O (wt%)': {
-        #            'description': 'Total ( kl >0) or dissolved ( kl =-1)',
-        #            'type': 'number'
-        #          },
-        #          'CO2 (wt%)': {
-        #            'description': 'Total ( kl >0) or dissolved ( kl =-1)',
-        #            'type': 'number'
-        #          },
-        #          'H2O dissolved in the melt (wt%)': {
-        #            'type': 'number'
-        #          },
-        #          'CO2 dissolved in the melt (ppm)': {
-        #            'type': 'number'
-        #          },
-        #          'CO2 in the fluid (wt%)': {
-        #            'type': 'number'
-        #          },
-        #          'CO2 in the fluid (mol%)': {
-        #            'type': 'number'
-        #          },
-        #          'Amount of fluid phase in magma (wt%)': {
-        #            'type': 'number'
-        #          },
-        #          'Amount of fluid phase in magma (vol%)': {
-        #            'type': 'number'
-        #          },
-        #          'Density of the melt phase (kg/m3)': {
-        #            'description':
-        #              'melt density is computed by the Lange (1994) model',
-        #            'type': 'number'
-        #          },
-        #          'Density of the gas phase (kg/m3)': {
-        #            'type': 'number'
-        #          },
-        #          'Density of the two-phase magma (kg/m3)': {
-        #            'type': 'number'
-        #          },
-        #          'Viscosity of the melt phase [log (Pa s)]': {
-        #            'description':
-        #              'melt viscosity is computed by '
-        #              'the Giordano et al. (2008) model',
-        #            'type': 'number'
-        #          },
-        #          'Viscosity of the two-phase magma [log (Pa s)]': {
-        #            'description':
-        #              'the viscosity of bubble-bearing melt is computed by '
-        #              'the Ishii and Zuber (1979) model for non-deformable '
-        #              'bubbles',
-        #            'type': 'number'
-        #          }
-        #        }
-        #      }
-        #    }
     },
     'links': [{
         'type': 'text/html',
@@ -393,28 +348,50 @@ PROCESS_METADATA = {
         'href': 'https://example.org/process',
         'hreflang': 'en-US'
       }],
-    'example': {
-        'inputs': {
-            'swinput.data': {
-                'value': {'ndat1': 1, 'ndat2': 2, 'kl': 0}
-            },
-            'sw.data': [{
-                    'value': [
-                        '1.00d8', '1273.', '.0400', '.0200', '.7653',
-                        '.0032', '.1201', '.0027', '.0246', '.0006',
-                        '.0018', '.0132', '.0378', '.0306'
-                    ]
-                },
-                {
-                    'value': [
-                        '2.00d8', '1173.', '.0200', '.0010', '.7053',
-                        '.0032', '.1301', '.0027', '.0146', '.0006',
-                        '.0118', '.0232', '.0378', '.0306'
+    'examples': [
+        {
+            'payload_example': {
+                'inputs': {
+                    'swinput.data': {
+                        'value': {'ndat1': 1, 'ndat2': 2, 'kl': 0}
+                    },
+                    'sw.data': [
+                        {
+                            'value': [
+                                '1.00d8', '1273.', '.0400', '.0200', '.7653',
+                                '.0032', '.1201', '.0027', '.0246', '.0006',
+                                '.0018', '.0132', '.0378', '.0306'
+                            ]
+                        },
+                        {
+                            'value': [
+                                '2.00d8', '1173.', '.0200', '.0010', '.7053',
+                                '.0032', '.1301', '.0027', '.0146', '.0006',
+                                '.0118', '.0232', '.0378', '.0306'
+                            ]
+                        }
                     ]
                 }
-            ]
+            }
+        },
+        {
+            'curl_example': (
+                "curl -k -L -X POST "
+                "\"https://epos_geoinquire.pi.ingv.it/epos_pygeoapi/processes/solwcad/execution\" "
+                "-H \"Content-Type: application/json\" "
+                "-d '{ \"inputs\":{\"swinput.data\":{\"value\":{"
+                "\"ndat1\":1,\"ndat2\":2,\"kl\":0}},"
+                "\"sw.data\":[{\"value\":"
+                "[\"1.00d8\",\"1273.\",\".0400\",\".0200\",\".7653\","
+                "\".0032\",\".1201\",\".0027\",\".0246\",\".0006\",\".0018\","
+                "\".0132\",\".0378\",\".0306\"]},"
+                "{\"value\":[\"2.00d8\",\"1173.\",\".0200\",\".0010\","
+                "\".7053\",\".0032\",\".1301\",\".0027\",\".0146\",\".0006\","
+                "\".0118\",\".0232\",\".0378\",\".0306\"]}]}}'"
+            )
         }
-    }
+    ]
+
     # curl localhost:5000/processes/solwcad/execution
     #     -H 'Content-Type: application/json'
     #     -d '{ "inputs" : {  "swinput.data" : { "value" :
@@ -443,48 +420,96 @@ class SolwcadProcessor(BaseRemoteExecutionProcessor):
         super().__init__(processor_def, PROCESS_METADATA)
 
     def prepare_output(self, info, working_dir, outputs):
-        # Only one output:
-        #   "output in requested format"
-        #   mediatype "as per output definition from process description"
-
-        # Note: the 'code' may return a URL instead of the value.
-        # but in this case the "product" is a string in URL format,
-        # NOT the object/file that can be retrieved at the given URL.
-
-        mimetype = 'application/json'
-
         code_params = info['params']
         solwcad_out = []
         with open(str(Path(working_dir) / code_params['-output']), mode='r+t'
                   ) as output_file:
-            # NOTE: there is no check the output is well formatted,
-            # i.e. one line per set of 15 numbers, without empty lines
             while len(line_items := output_file.readline().strip('\n')) > 0:
-                solwcad_out.append({"value": line_items.split()})
+                fields = line_items.split()
+                if len(fields) != 15:
+                    raise ProcessorExecuteError(
+                        "Program error: report to the administrator"
+                    )
+                solwcad_out.append(fields)
 
-        output = {
-            'id': 'solwcad.out',
-            'value': solwcad_out
+#        output = {
+#            'id': 'solwcad.out',
+#            'value': solwcad_out
+#        }
+        possible_outputs = self.metadata['outputs']
+        if not bool(outputs):
+            requested_outputs = possible_outputs
+        else:
+            requested_outputs = outputs
+
+        # Prepare outputs
+        # ###############
+        produced_outputs = {}
+        
+        if 'solwcad.out' in requested_outputs:
+            produced_outputs['solwcad.out'] = {
+                'value': solwcad_out,
+                'mediaType': 'application/json'
         }
-        return mimetype, output
+#        return mimetype, output
+        return self.format_output(produced_outputs, outputs)
 
     def prepare_input(self, data, working_dir, outputs):
-        pattern_generic_number = \
-            r"^([+-]?([\d]+\.|[\d]*\.[\d]+))([Dd][+-]?[\d]+)?$"
+        # check for error on outputs request:
+        if bool(outputs):
+            requested_output = set(
+                outputs.keys() if isinstance(outputs, dict) else outputs
+            )
+            if requested_output - set(self.metadata['outputs']):
+                err_msg = 'Outputs contains unexpected parameters.'
+                raise ProcessorExecuteError(err_msg)
+
+#        pattern_generic_number = \
+#            r"^([+-]?([\d]+\.|[\d]*\.[\d]+))([Dd][+-]?[\d]+)?$"
 
         try:
-            swinput = data['swinput.data']['value']
-            sw = []
-            for item in data['sw.data']:
-                sw.append(item['value'])
-        except Exception as err:
-            err_msg = 'Input not correctly formatted: ' + str(err) + '\'.'
+          swinput = data['swinput.data']['value']
+          sw = data['sw.data']
+        except (KeyError, TypeError) as err:
+            err_msg = 'Input not correctly formatted: ' + str(err) + '.'
             raise ProcessorExecuteError(err_msg)
 
+        # Verify parameters matching definitions.
+        LOGGER.debug(f'Validating input')
+        validation_errors = validate_json(
+            INPUT_SCHEMA['properties']['swinput.data'], 
+            data['swinput.data']['value']
+        )
+        if validation_errors:
+            raise ProcessorExecuteError(validation_errors)
+        validation_errors = validate_json(
+            INPUT_SCHEMA['properties']['sw.data'], 
+            data['swinput.data']
+        )
+        if validation_errors:
+            raise ProcessorExecuteError(validation_errors)
+
+#        try:
+#        swinput = data['swinput.data']['value']
+#        sw = data['sw.data']
+#        except (KeyError, TypeError) as err:
+#            err_msg = 'Input not correctly formatted: ' + str(err) + '.'
+#            raise ProcessorExecuteError(err_msg)
+
+#        try:
+#            swinput = data['swinput.data']['value']
+#            sw = []
+#            for item in data['sw.data']:
+#                sw.append(item['value'])
+#        except Exception as err:
+#            err_msg = 'Input not correctly formatted: ' + str(err) + '\'.'
+#            raise ProcessorExecuteError(err_msg)
+
         kl = swinput.get('kl', None)
-        if kl is None:
-            err_msg = 'Value \'swinput.data[\'kl\']\' must be provided.'
-            raise ProcessorExecuteError(err_msg)
+#        if kl is None:
+#            err_msg = 'Value \'swinput.data[\'kl\']\' must be provided.'
+#            raise ProcessorExecuteError(err_msg)
+#
 
         ndat1 = swinput.get('ndat1', None)
         ndat2 = swinput.get('ndat2', None)
@@ -494,92 +519,94 @@ class SolwcadProcessor(BaseRemoteExecutionProcessor):
         tlimit = swinput.get('tlimit', None)
         match kl:
             case 0 | -1:
-                try:
-                    int(ndat1)
-                    int(ndat2)
-                except (ValueError, TypeError):
-                    err_msg = 'Values \'swinput.data[\'ndat1\']\' and ' \
-                              ' \'swinput.data[\'ndat2\']\' must be integer.'
-                    raise ProcessorExecuteError(err_msg)
+#                try:
+                int(ndat1)
+                int(ndat2)
+#                except (ValueError, TypeError):
+#                    err_msg = 'Values \'swinput.data[\'ndat1\']\' and ' \
+#                              ' \'swinput.data[\'ndat2\']\' must be integer.'
+#                    raise ProcessorExecuteError(err_msg)
                 swinput['iopen'] = 0
                 swinput['fopen'] = swinput['dt'] = swinput['tlimit'] = "0.0"
             case 1:
-                try:
-                    swinput['iopen'] = iopen = int(iopen)
-                    if ((iopen < 0) or (iopen > 1)):
-                        err_msg = 'Value \'swinput.data[\'iopen\']\' ' \
-                                  'must be [0, 1].'
-                        raise ProcessorExecuteError(err_msg)
-                except (ValueError, TypeError):
-                    err_msg = 'Value \'swinput.data[\'iopen\']\' ' \
-                              'must be integer.'
-                    raise ProcessorExecuteError(err_msg)
+#                try:
+                swinput['iopen'] = iopen = int(iopen)
+#                    if ((iopen < 0) or (iopen > 1)):
+#                        err_msg = 'Value \'swinput.data[\'iopen\']\' ' \
+#                                  'must be [0, 1].'
+#                        raise ProcessorExecuteError(err_msg)
+#                except (ValueError, TypeError):
+#                    err_msg = 'Value \'swinput.data[\'iopen\']\' ' \
+#                              'must be integer.'
+#                    raise ProcessorExecuteError(err_msg)
 
                 swinput['fopen'] = fopen = str(fopen)
                 if (iopen == 1):
-                    if not re.match(pattern_generic_number, fopen):
-                        err_msg = 'Value \'swinput.data[\'fopen\']\' ' \
-                                  'not correctly formatted.'
+#                    if not re.match(pattern_generic_number, fopen):
+#                        err_msg = 'Value \'swinput.data[\'fopen\']\' ' \
+#                                  'not correctly formatted.'
+                    pass
                 else:
                     swinput['fopen'] = "0.0"
 
                 swinput['ndat2'] = 0
                 swinput['dt'] = swinput['tlimit'] = "0.0"
             case 2:
-                try:
-                    swinput['iopen'] = iopen = int(iopen)
-                    if ((iopen < 0) or (iopen > 1)):
-                        err_msg = 'Value \'swinput.data[\'iopen\']\' ' \
-                                  'must be [0, 1].'
-                        raise ProcessorExecuteError(err_msg)
-                except (ValueError, TypeError):
-                    err_msg = 'Value \'swinput.data[\'iopen\']\' ' \
-                              'must be integer.'
-                    raise ProcessorExecuteError(err_msg)
+#                try:
+                swinput['iopen'] = iopen = int(iopen)
+#                    if ((iopen < 0) or (iopen > 1)):
+#                        err_msg = 'Value \'swinput.data[\'iopen\']\' ' \
+#                                  'must be [0, 1].'
+#                        raise ProcessorExecuteError(err_msg)
+#                except (ValueError, TypeError):
+#                    err_msg = 'Value \'swinput.data[\'iopen\']\' ' \
+#                              'must be integer.'
+#                    raise ProcessorExecuteError(err_msg)
 
                 swinput['fopen'] = fopen = str(fopen)
                 if (iopen == 1):
-                    if not re.match(pattern_generic_number, fopen):
-                        err_msg = 'Value \'swinput.data[\'fopen\']\' ' \
-                                  'not correctly formatted.'
+#                    if not re.match(pattern_generic_number, fopen):
+#                        err_msg = 'Value \'swinput.data[\'fopen\']\' ' \
+#                                  'not correctly formatted.'
+                    pass
                 else:
                     swinput['fopen'] = "0.0"
 
                 swinput['dt'] = dt = str(dt)
-                if not re.match(pattern_generic_number, dt):
-                    err_msg = 'Value \'swinput.data[\'dt\']\' ' \
-                              'not correctly formatted.'
+#                if not re.match(pattern_generic_number, dt):
+#                    err_msg = 'Value \'swinput.data[\'dt\']\' ' \
+#                              'not correctly formatted.'
 
                 swinput['tlimit'] = tlimit = str(tlimit)
-                if not re.match(pattern_generic_number, tlimit):
-                    err_msg = 'Value \'swinput.data[\'tlimit\']\' ' \
-                              'not correctly formatted.'
+#                if not re.match(pattern_generic_number, tlimit):
+#                    err_msg = 'Value \'swinput.data[\'tlimit\']\' ' \
+#                              'not correctly formatted.'
 
                 swinput['ndat2'] = 0
-            case _:
-                err_msg = 'Value \'swinput.data[\'kl\']\' not accepted.'
-                raise ProcessorExecuteError(err_msg)
+#            case _:
+#                err_msg = 'Value \'swinput.data[\'kl\']\' not accepted.'
+#                raise ProcessorExecuteError(err_msg)
 
-        if not isinstance(sw, list | tuple):
-            err_msg = 'Received \'sw.data\' with wrong format: not a sequence.'
-            raise ProcessorExecuteError(err_msg)
+#        if not isinstance(sw, list | tuple):
+#            err_msg = 'Received \'sw.data\' with wrong format: not a sequence.'
+#            raise ProcessorExecuteError(err_msg)
 
-        for sw_line in sw:
-            if not isinstance(sw_line, list | tuple):
-                err_msg = 'In \'sw.data\' received an item ' \
-                          'with wrong format: not a sequence.'
-                raise ProcessorExecuteError(err_msg)
-
-            if len(sw_line) != 14:
-                err_msg = 'In \'sw.data\' received an item with ' \
-                          'wrong number of items: ' + str(len(sw_line)) + '.'
-                raise ProcessorExecuteError(err_msg)
-
-            for number in sw_line:
-                if not re.match(pattern_generic_number, str(number)):
-                    err_msg = 'Value in \'sw.data\' ' \
-                              'not correctly formatted: \'' + number + '\'.'
-                    raise ProcessorExecuteError(err_msg)
+#        for sw_line in sw:
+#            if not isinstance(sw_line, list | tuple):
+#                err_msg = 'In \'sw.data\' received an item ' \
+#                          'with wrong format: not a sequence.'
+#                raise ProcessorExecuteError(err_msg)
+#
+#            if len(sw_line) != 14:
+#                err_msg = 'In \'sw.data\' received an item with ' \
+#                          'wrong number of items: ' + str(len(sw_line)) + '.'
+#                raise ProcessorExecuteError(err_msg)
+#
+#            for number in sw_line:
+#                if not re.match(pattern_generic_number, str(number)):
+#                    err_msg = 'Value in \'sw.data\' ' \
+#                              'not correctly formatted: \'' + number + '\'.'
+#                    raise ProcessorExecuteError(err_msg)
 
         # Create input file(s) required to run the 'code'
         # ###############################################

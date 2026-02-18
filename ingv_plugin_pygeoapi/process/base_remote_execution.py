@@ -27,9 +27,11 @@
 #
 # =================================================================
 
+import base64
 import logging
 import os
 from typing import Any, Optional, Tuple
+import uuid
 import requests
 import shutil
 import time
@@ -133,20 +135,7 @@ class BaseRemoteExecutionProcessor(BaseProcessor):
         NOTE: the logic to pass back the data received from the 'code' is up
         to the specialised class.
 
-        NOTE: specifically, it is also valid for file(s) produced by the
-        'code': the specialised class must handle the returned data to
-        produce the 'outputs' as defined by the metadata definition.
-
-        NOTE: if the 'code' returns an URL to access a file, the function can
-        return the URL as string, "ONLY IF" the 'outputs' defined a string.
-
-        NOTE: to have the file returned to the caller as reference, the
-        function must return the encoded string; the manager will save the
-        encoded string as file and return:
-        -) "response_headers" with the reference of the file location
-        -) "outputs" empty
-
-        Return the outputs dictionary.
+        Return mimetype, process_outputs
         """
         raise NotImplementedError()
 
@@ -188,13 +177,13 @@ class BaseRemoteExecutionProcessor(BaseProcessor):
                 # If no returned message, get exception message
                 raise ProcessorExecuteError(response)
 
-        # Nota: siccome response.ok, allora il thread è sicuramente partito,
-        # alternativamente avrebbe risposto con un abort().
+        # Note: response.ok --> thread started
+        # otherwise we received an abort().
 
         if self.remote_execute_synch:
             info = response.json()
         else:
-            # Aspetta attivamente (con sleep) che il 'code' sia terminato
+            # Wait the end of the elaboration (using sleep)
 #            max_waiting_loops = self.max_waiting_loops + 1
 #            while (max_waiting_loops := max_waiting_loops-1) > 0:
             while True:
@@ -236,6 +225,146 @@ class BaseRemoteExecutionProcessor(BaseProcessor):
         shutil.rmtree(working_dir)
 
         return mimetype, process_outputs
+    
+    def format_output(self, produced_outputs: dict, user_requested_output):
+        """
+        Docstring for format_output
+        
+        :param self: Description
+        :param produced_outputs: the output returned by prepare_output()
+        :type produced_outputs: dict
+        """
+        # --- CASE 1: ONE OUTPUT ONLY ---
+# TODO: verify if when user_requested_output=none => CASE 2
+        if len(produced_outputs) == 1:
+            output_id, output = next(iter(produced_outputs.items()))
+            mimetype = output['mediaType']
+
+            value = output['value']
+
+            # decode base64 if needed
+            if output.get('encoding') == 'base64':
+                body = base64.b64decode(value)
+            else:
+                LOGGER.debug(f'value = {value}')
+                # JSON or text
+                if isinstance(value, (dict, list)):
+                    body = value
+                else:
+                    LOGGER.debug(f'isinstance(value, (dict, list) == False')
+                    body = str(value).encode('utf-8')
+
+            LOGGER.debug(f'returning: mimetype = {mimetype}')
+            LOGGER.debug(f'returning: process_outputs = {body}')
+            return mimetype, body
+
+        # --- CASE 2: MULTIPLE OUTPUT -> multipart/related ---
+        boundary = f"boundary-{uuid.uuid4()}"
+        parts = []
+
+        for output_id, output in produced_outputs.items():
+            media_type = output['mediaType']
+            value = output['value']
+
+            # prepare payload
+            if output.get('encoding') == 'base64':
+                LOGGER.debug(f'output.get("encoding") == "base64"')
+                payload = base64.b64decode(value)
+                transfer_encoding = "binary"
+            else:
+                if isinstance(value, (dict, list)):
+                    import json
+                    payload = json.dumps(value).encode('utf-8')
+                else:
+                    payload = str(value).encode('utf-8')
+                transfer_encoding = "8bit"
+
+            part = (
+                f"--{boundary}\r\n"
+                f"Content-Type: {media_type}\r\n"
+                f"Content-ID: <{output_id}>\r\n"
+                f"Content-Transfer-Encoding: {transfer_encoding}\r\n"
+                f"\r\n"
+            ).encode('utf-8') + payload + b"\r\n"
+
+            parts.append(part)
+
+        # Close multipart
+        parts.append(f"--{boundary}--\r\n".encode('utf-8'))
+
+        body = b"".join(parts)
+        mimetype = f'multipart/related; boundary="{boundary}"'
+
+        LOGGER.debug(f'returning: mimetype = {mimetype}')
+        LOGGER.debug(f'returning: process_outputs = {body}')
+        return mimetype, body
+
 
     def __repr__(self):
         return f'<BaseRemoteExecutionProcessor> {self.name}'
+
+
+from jsonschema.validators import Draft202012Validator
+def validate_json(schema: dict, instance: dict) -> list:
+    """
+    Helper function to validate JSON against a JSON Schema
+
+    :param schema: `dict` of JSON Schema
+    :paran instance: `dict` of request instance
+
+    :returns: `list` of valiation errors
+    """
+
+    validation_errors = []
+    LOGGER.debug('Validating input against schema')
+    LOGGER.debug(f'Input: {instance}')
+    LOGGER.debug(f'Schema: {schema}')
+    validator = Draft202012Validator(schema)
+
+    for error in validator.iter_errors(instance):
+        LOGGER.debug(f'{error.json_path}: {error.message}')
+        validation_errors.append(f'{error.json_path}: {error.message}')
+
+    return validation_errors
+
+# to be used by METADATA returning charts:
+CHART_SCHEMA = {
+    'type': 'object',
+    'required': ['chartType', 'domain', 'series'],
+    'properties': {
+        'chartType': {
+            'type': 'string'
+        },
+        'domain': {
+            'type': 'object',
+            'properties': {
+                'key': {'type': 'string'},
+                'label': {'type': 'string'},
+                'unit': {'type': 'string'},
+                'values': {
+                    'type': 'array',
+                    'items': {'type': 'number'}
+                }
+            },
+            'required': ['key', 'label', 'values']
+        },
+        'series': {
+            'type': 'array',
+            'items': {
+                'type': 'object',
+                'properties': {
+                    'key': {'type': 'string'},
+                    'label': {'type': 'string'},
+                    'unit': {'type': 'string'},
+                    'values': {
+                        'type': 'array',
+                        'items': {'type': 'number'}
+                    }
+                },
+                'required': ['key', 'values']
+            }
+        }
+    }
+}
+
+
