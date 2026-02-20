@@ -432,10 +432,6 @@ class SolwcadProcessor(BaseRemoteExecutionProcessor):
                     )
                 solwcad_out.append(fields)
 
-#        output = {
-#            'id': 'solwcad.out',
-#            'value': solwcad_out
-#        }
         possible_outputs = self.metadata['outputs']
         if not bool(outputs):
             requested_outputs = possible_outputs
@@ -451,7 +447,6 @@ class SolwcadProcessor(BaseRemoteExecutionProcessor):
                 'value': solwcad_out,
                 'mediaType': 'application/json'
         }
-#        return mimetype, output
         return self.format_output(produced_outputs, outputs)
 
     def prepare_input(self, data, working_dir, outputs):
@@ -463,9 +458,6 @@ class SolwcadProcessor(BaseRemoteExecutionProcessor):
             if requested_output - set(self.metadata['outputs']):
                 err_msg = 'Outputs contains unexpected parameters.'
                 raise ProcessorExecuteError(err_msg)
-
-#        pattern_generic_number = \
-#            r"^([+-]?([\d]+\.|[\d]*\.[\d]+))([Dd][+-]?[\d]+)?$"
 
         try:
           swinput = data['swinput.data']['value']

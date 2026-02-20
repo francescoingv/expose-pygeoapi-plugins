@@ -174,14 +174,13 @@ PROCESS_METADATA = {
   # ####################
 
   'jobControlOptions': [
-      'async-execute',
-      'sync-execute'
+      'async-execute'
   ],
   # type: array,
   #   items: {type: string, enum: ['sync-execute', 'async-execute', 'dismiss']}
     
   'outputTransmission': [
-      'value'
+      'value', 'reference'
   ],
   # type: array, 
   #   items: {type: string, enum: ['value', 'reference'], default: 'value'}
@@ -298,7 +297,8 @@ PROCESS_METADATA = {
       'title': 'Input parameters',
       'description': 'Log of all input parameters used',
       'schema': {
-          "type": "string"
+          "type": "string",
+          "contentMediaType": "text/plain"
       }
     },
     'dem': {
@@ -342,7 +342,7 @@ PROCESS_METADATA = {
 
   # not defined in process.yaml
   # >>>>>>>>>>>>>>>>>>>>>>>>>
-  'examples': [
+  'example': [
     {
       'payload_example': {
         'inputs': {
@@ -354,36 +354,35 @@ PROCESS_METADATA = {
           }],
           'dt': 0.5, 'margin': 5000,
         },
-        'outputs': {
-          'input_data', 'dem', 'invasion_map', 'spatial_evolution',
-          'deposit_thickness'
-        }
+        'outputs': [
+            'input_data', 'dem', 'invasion_map', 'spatial_evolution',
+            'deposit_thickness'
+        ]
       }
     },
     {
-      'curl_example': (
+      'curl_example': 
           "curl -k -L -X POST "
           "\"https://epos_geoinquire.pi.ingv.it/epos_pygeoapi/processes/pybox/execution\" "
           "-H \"Content-Type: application/json\" "
           "-d '{\"inputs\":{\"lon\":-90.88,\"lat\":15.47,\"l0\":150,\"h0\":150,"
-          "\"theta0\":500,\"multiple_values\":[{\"value\":{"
-          "\"eps0\":0.01,\"rhos\":1000,\"ds\":0.0001}}],"
+          "\"theta0\":500,\"multiple_values\":[{"
+          "\"eps0\":0.01,\"rhos\":1000,\"ds\":0.0001}],"
           "\"dt\":0.5,\"margin\":5000},"
           "\"outputs\":[\"input_data\",\"dem\",\"spatial_evolution\","
           "\"deposit_thickness\"]}'"
-      )
     }
   ]
-  # curl -k -L -X POST "https://epos_geoinquire.pi.ingv.it/epos_pygeoapi/processes/pybox/execution" -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" :  -90.88, "lat" : 15.47, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"value": {"eps0": 0.01, "rhos": 1000, "ds": 0.0001}}],"dt" : 0.5, "margin" : 5000 }, "outputs" : ["input_data", "dem", "spatial_evolution"] }'
+  # curl -k -L -X POST "https://epos_geoinquire.pi.ingv.it/epos_pygeoapi/processes/pybox/execution" -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" :  -90.88, "lat" : 15.47, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : ["input_data", "dem", "spatial_evolution"] }'
   # per asincrono aggiungere: -H "Prefer: respond-async"
 
   # curl localhost:5000/processes/pybox/execution 
   #       -H 'Content-Type: application/json' 
   #       -d '{ "inputs" : { "lon" :  90.88, "lat" : 14.47, "l0" : 150, "h0" : 150, 
-  #                          "theta0" : 500, "multiple_values" : [{"value" : {"eps0": 0.01, "rhos": 1000, "ds": 0.0001}}], 
+  #                          "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}], 
   #                          "dt" : 0.5, "margin" : 5000 }}'
-  # curl localhost:5000/processes/pybox/execution -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" :  -90.88, "lat" : 15.47, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"value": {"eps0": 0.01, "rhos": 1000, "ds": 0.0001}}],"dt" : 0.5, "margin" : 5000 }, "outputs" : ["input_data", "dem", "spatial_evolution"] }'
-  # curl localhost:5000/processes/pybox/execution -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" :  -90.88, "lat" : 15.47, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"value": {"eps0": 0.01, "rhos": 1000, "ds": 0.0001}}],"dt" : 0.5, "margin" : 5000 }, "outputs" : {"input_data": { "transmissionMode": "value" }, "dem" : { "transmissionMode": "value" }, "spatial_evolution": { "transmissionMode": "value" } } }'
+  # curl localhost:5000/processes/pybox/execution -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" :  -90.88, "lat" : 15.47, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : ["input_data", "dem", "spatial_evolution"] }'
+  # curl localhost:5000/processes/pybox/execution -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" :  -90.88, "lat" : 15.47, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : {"input_data": { "transmissionMode": "value" }, "dem" : { "transmissionMode": "value" }, "spatial_evolution": { "transmissionMode": "value" } } }'
   #
 }
 
@@ -414,7 +413,6 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
         # Prepare outputs
         # ###############
         produced_outputs = {}
-
         try:
             if 'input_data' in requested_outputs:
                 with open(
@@ -422,19 +420,22 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
                     f"{self.base_output_filename}_params.txt"
                 ) as output_file:
                     contenuto = output_file.read()
-                produced_outputs['input_data'] = {
-                    'value': contenuto,
-                    'mediaType': 'text/plain'
-                }
+                if requested_outputs.get('transmissionMode') == "value":
+                    produced_outputs['input_data'] = {
+                        'value': contenuto,
+                        'mediaType': 'text/plain'
+                    }
 
             if 'dem' in requested_outputs:
                 with open(
                     Path(working_dir) / 
-                    f"{self.base_output_filename}.tif"
+                    f"{self.base_output_filename}.tif", "rb"
                 ) as output_file:
                     contenuto_bytes = output_file.read()
                 produced_outputs['dem'] = {
                     # ref. standard, pag 63, "imagesOutput"
+                    # Return a "string" coded base64 (which is what is expected
+                    # for "binary"): ref. standard, pag. 45, Note 7
                     'value': base64.b64encode(contenuto_bytes).decode('utf-8'),
                     'encoding': 'base64',
                     'mediaType': 'application/tiff; application=geotiff'
@@ -443,7 +444,7 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
             if 'invasion_map' in requested_outputs:
                 with open(
                     Path(working_dir) / 
-                    f"{self.base_output_filename}_EC2.tif"
+                    f"{self.base_output_filename}_EC2.tif", "rb"
                 ) as output_file:
                     contenuto_bytes = output_file.read()
                 produced_outputs['invasion_map'] = {
@@ -673,7 +674,7 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
                 "for this job_id: {info['job_id']}."
             )
 
-        return super.format_output(produced_outputs, outputs)
+        return self.format_output(produced_outputs, outputs)
 
     def prepare_input(self, data, working_dir, outputs):
         # check for error on outputs request:
@@ -685,46 +686,23 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
                 err_msg = 'Outputs contains unexpected parameters.'
                 raise ProcessorExecuteError(err_msg)
 
-        # Verify required and not exceeding parameters.
-        required_key_set = {'lat', 'lon', 'l0', 'h0', 'theta0',
-                            'multiple_values','dt', 'margin'}
-        keys_present = set(data.keys())
-        if not required_key_set.issubset(keys_present):
-            err_msg = 'Input does not contains all required parameters.'
-            raise ProcessorExecuteError(err_msg)
-        
-        extra_keys = keys_present - required_key_set
-        if extra_keys:
-            err_msg = f"Input contains unexpected parameters: {', '.join(extra_keys)}."
-            raise ProcessorExecuteError(err_msg)
-
-        # Checks on multiple_values
-        particle_classes = len(data['multiple_values'])
-        if  particle_classes > 21:
-            err_msg = "Input contains too many particle classes: max 21."
-            raise ProcessorExecuteError(err_msg)
+        # Verify parameters matching definitions.
+        LOGGER.debug(f'Validating input')
+        validation_errors = validate_json(
+            INPUT_SCHEMA, data
+        )
+        if validation_errors:
+            raise ProcessorExecuteError(validation_errors)
 
         valori_eps0 = []
         valori_rhos = []
         valori_ds = []
 
         for i, multiple_value in enumerate(data['multiple_values'], 1):
-            try:
-                classe = multiple_value['value']
-            except (KeyError, TypeError) as err:
-                err_msg = f"In multiple_values, item number {i} is not correctly formatted {err}."
-                raise ProcessorExecuteError(err_msg)
-
-            LOGGER.debug(f'Validating multiple_values[{i}]')
-            validation_errors = validate_json(INPUT_SCHEMA['properties']['multiple_values']['items'], classe)
-            if validation_errors:
-                validation_errors.insert(0, f"In multiple_values, item number {i}: ")
-                raise ProcessorExecuteError(validation_errors)
-
             # add to input parameter            
-            valori_eps0.append(classe['eps0'])
-            valori_rhos.append(classe['rhos'])
-            valori_ds.append(classe['ds'])
+            valori_eps0.append(multiple_value['eps0'])
+            valori_rhos.append(multiple_value['rhos'])
+            valori_ds.append(multiple_value['ds'])
 
         if sum(valori_eps0) >= 1:
             err_msg = f"In multiple_values, the sum of eps0 must be < 1"
@@ -735,7 +713,7 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
         # ###############################################
         code_input_param = {}
         
-        # Trasforma le liste di numeri in stringhe separate da spazi
+        # Make lists of numbers
         code_input_param['--eps0'] = list(map(str, valori_eps0))
         code_input_param['--rhos'] = list(map(str, valori_rhos))
         code_input_param['--ds']   = list(map(str, valori_ds))
@@ -746,17 +724,9 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
                 # Already treated before.
                 continue
 
-            # Check parameter format and range
-            param_value = data[name]
-            LOGGER.debug(f'Validating parameter {name}')
-            validation_errors = validate_json(INPUT_SCHEMA['properties'][name], param_value)
-            if validation_errors:
-                validation_errors.insert(0, f"In {name}: ")
-                raise ProcessorExecuteError(validation_errors)
-            
             # Add as input parameter
             input_flag = '--' + name
-            code_input_param[input_flag] = param_value
+            code_input_param[input_flag] = data[name]
 
         # Adding parameter output file (not custom specified)
         code_input_param['-o'] = self.base_output_filename
