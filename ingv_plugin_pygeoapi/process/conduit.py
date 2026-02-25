@@ -27,11 +27,13 @@
 #
 # =================================================================
 
+import json
 import logging
 import re
 import copy
 
 from pathlib import Path
+import shutil
 
 from pygeoapi.process.base import (
     ProcessorExecuteError,
@@ -54,11 +56,11 @@ INPUT_SCHEMA = {
   "additionalProperties": False,
   "properties": {
     "components": {
-      "title": "Model parameters", # opzional
+      "title": "Model parameters", # optional
       "description":
         "Parameters to calculate the multiphase, multicomponent flow "
         "of magma along the volcanic conduit. Values must be in scientific "
-        "notation (e.g., 1.E3). ", # opzional
+        "notation (e.g., 1.E3). ", # optional
       "type": "object",
       "oneOf": [
         {
@@ -73,7 +75,7 @@ INPUT_SCHEMA = {
           "additionalProperties": False,
           "properties": {
             "fg": {
-              # opzional
+              # optional
               "type": "number",
               "title": "Mass flow rate [kg/s]",
               "description": "Initial guess for the mass flow rate, "
@@ -267,7 +269,7 @@ INPUT_SCHEMA = {
               "exclusiveMinimum": 273.15
             },
             "dg": {
-              # opzionale
+              # optional
               "type": "number",
               "title": "Conduit diameter [m]",
               "description": 
@@ -636,19 +638,23 @@ class ConduitProcessor(BaseRemoteExecutionProcessor):
         super().__init__(processor_def, PROCESS_METADATA)
         self.supports_outputs = True
 
-
     def prepare_output(self, info, working_dir, outputs):
         # Checks for error on outputs request performed by prepare_input().
 
-        possible_outputs = self.metadata['outputs']
-        if not bool(outputs):
-            requested_outputs = possible_outputs
+        # Common part to all prepare_output()
+        if isinstance(outputs, dict):
+            req_outputs = outputs
         else:
-            requested_outputs = outputs
-
+            req_outputs = {}
+            base_outputs = outputs if outputs else set(
+                self.metadata['outputs'].keys()
+            )
+            for output_id in base_outputs:
+                # set default transmissionMode
+                req_outputs[output_id] = {'transmissionMode': 'value'}
+                                    
         # Prepare outputs
         # ###############
-        produced_outputs = {}
 
         # The code produce an output file: the file name is fixed by the code:
         out_file_name = 'conduit.out'
@@ -659,6 +665,8 @@ class ConduitProcessor(BaseRemoteExecutionProcessor):
         gas_velocity = []
         liquid_velocity = []
         pressure = []
+
+        produced_outputs = {}
         try:
             with open(str(Path(working_dir) / out_file_name)) as output_file:
                 for line in output_file:
@@ -676,16 +684,9 @@ class ConduitProcessor(BaseRemoteExecutionProcessor):
                     gas_velocity.append(values[3])
                     liquid_velocity.append(values[4])
                     pressure.append(values[5])
-        except OSError as e:
-            LOGGER.error(f"Errore apertura file: {e}")
-            raise ProcessorExecuteError(
-                f"Program error: please report to the service provider "
-                "for this job_id: {info['job_id']}."
-            )
 
-        if 'chart_1' in requested_outputs:
-            produced_outputs['chart_1'] = {
-                'value': {
+            if 'chart_1' in req_outputs:
+                value = {
                     'chartType': 'line',
                     'domain': {
                         'key': 'Conduit length',
@@ -701,13 +702,32 @@ class ConduitProcessor(BaseRemoteExecutionProcessor):
                             'values': gas_volume_fraction
                         }
                     ]
-                },
-                'mediaType': 'application/json'
-            }
+                }
 
-        if 'chart_2' in requested_outputs:
-            produced_outputs['chart_2'] = {
-                'value': {
+                produced_outputs['chart_1'] = {'mediaType': 'application/json'}
+                transmission_mode = req_outputs['chart_1'].get(
+                    'transmissionMode', ''
+                )
+                if transmission_mode == "value":
+                    produced_outputs['chart_1']['value'] =  value
+                elif (transmission_mode == "reference"):
+                    dst_file = Path(self.base_reference_dir) / (
+                        f"{self.job_id}_chart_1.json"
+                    )
+
+                    with open(dst_file, 'w', encoding='utf-8') as json_file:
+                        json.dump(value, json_file)
+
+                    file_href = (
+                        f"{self.base_reference_url}"
+                        f"{self.job_id}_chart_1.json"
+                    )
+                    produced_outputs['chart_1']['href'] = file_href
+                else: # should never happen: cheched in _check_output_request()
+                    raise ProcessorExecuteError("Program error.")
+
+            if 'chart_2' in req_outputs:
+                value = {
                     'chartType': 'line',
                     'domain': {
                         'key': 'Conduit length',
@@ -729,13 +749,33 @@ class ConduitProcessor(BaseRemoteExecutionProcessor):
                             'values': liquid_velocity
                         },
                     ]
-                },
-                'mediaType': 'application/json'
-            }
+                }
 
-        if 'chart_3' in requested_outputs:
-            produced_outputs['chart_3'] = {
-                'value': {
+                produced_outputs['chart_2'] = {'mediaType': 'application/json'}
+                transmission_mode = req_outputs['chart_2'].get(
+                    'transmissionMode', ''
+                )
+                if transmission_mode == "value":
+                    produced_outputs['chart_2']['value'] =  value
+                elif (transmission_mode == "reference"):
+                    dst_file = Path(self.base_reference_dir) / (
+                        f"{self.job_id}_chart_2.json"
+                    )
+
+                    with open(dst_file, 'w', encoding='utf-8') as json_file:
+                        json.dump(value, json_file)
+
+                    file_href = (
+                        f"{self.base_reference_url}"
+                        f"{self.job_id}_chart_2.json"
+                    )
+                    produced_outputs['chart_2']['href'] = file_href
+                else: # should never happen: cheched in _check_output_request()
+                    raise ProcessorExecuteError("Program error.")
+
+
+            if 'chart_3' in req_outputs:
+                value = {
                     'chartType': 'line',
                     'domain': {
                         'key': 'Conduit length',
@@ -751,32 +791,71 @@ class ConduitProcessor(BaseRemoteExecutionProcessor):
                             'values': pressure
                         },
                     ]
-                },
-                'mediaType': 'application/json'
-            }
-        
-        if 'outfile' in requested_outputs:
-            with open(str(Path(working_dir) / out_file_name), mode='r') as f:
-                contenuto = f.read()
+                }
 
-            produced_outputs['outfile'] = {
-                'value': contenuto,
-                'mediaType': 'text/csv'
-            }
+                produced_outputs['chart_3'] = {'mediaType': 'application/json'}
+                transmission_mode = req_outputs['chart_3'].get(
+                    'transmissionMode', ''
+                )
+                if transmission_mode == "value":
+                    produced_outputs['chart_3']['value'] =  value
+                elif (transmission_mode == "reference"):
+                    dst_file = Path(self.base_reference_dir) / (
+                        f"{self.job_id}_chart_3.json"
+                    )
+
+                    with open(dst_file, 'w', encoding='utf-8') as json_file:
+                        json.dump(value, json_file)
+
+                    file_href = (
+                        f"{self.base_reference_url}"
+                        f"{self.job_id}_chart_3.json"
+                    )
+                    produced_outputs['chart_3']['href'] = file_href
+                else: # should never happen: cheched in _check_output_request()
+                    raise ProcessorExecuteError("Program error.")
+
+            if 'outfile' in req_outputs:
+                produced_outputs['outfile'] = {'mediaType': 'text/csv'}
+                transmission_mode = req_outputs['outfile'].get(
+                    'transmissionMode', ''
+                )
+                if transmission_mode == "value":
+                    with open(
+                        str(Path(working_dir) / out_file_name)
+                    ) as f:
+                        contenuto = f.read()
+                    produced_outputs['outfile']['value'] = contenuto
+                elif (transmission_mode == "reference"):
+                    src_file = str(Path(working_dir) / out_file_name)
+                    dst_file = Path(self.base_reference_dir) / (
+                        f"{self.job_id}_outfile.csv"
+                    )
+                    shutil.copy(src_file, dst_file)
+
+                    file_href = (
+                        f"{self.base_reference_url}"
+                        f"{self.job_id}_outfile.csv"
+                    )
+                    produced_outputs['outfile']['href'] = file_href
+                else: # should never happen: cheched in _check_output_request()
+                    raise ProcessorExecuteError("Program error.")
+
+        except OSError as e:
+            LOGGER.error(f"Errore apertura file: {e}")
+            raise ProcessorExecuteError(
+                f"Program error: please report to the service provider "
+                "for this job_id: {info['job_id']}."
+            )
 
         return self.format_output(produced_outputs, outputs)
 
     def prepare_input(self, data, working_dir, outputs):
-        # check for error on outputs request:
-        if bool(outputs):
-            requested_output = set(
-                outputs.keys() if isinstance(outputs, dict) else outputs
-            )
-            if requested_output - set(self.metadata['outputs']):
-                err_msg = 'Outputs contains unexpected parameters.'
-                raise ProcessorExecuteError(err_msg)
-
         try:
+            # NOTE: the input attribute "components" is a complex object,
+            # therefore can either be trasferred by "value" or by "reference".
+            # Currently only "value" is supported (could improve return
+            # with proper code).
             components = data['components']['value']
         except (KeyError, TypeError) as err:
             err_msg = 'Input not correctly formatted: ' + str(err) + '.'

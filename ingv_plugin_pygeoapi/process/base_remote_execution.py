@@ -157,6 +157,11 @@ class BaseRemoteExecutionProcessor(BaseProcessor):
 #        )
 
         if 'reference' in process_metadata.get('outputTransmission', []):
+            self.base_reference_dir = processor_def.get('base_reference_dir')
+            if self.base_reference_dir is None:
+                raise ProcessorGenericError(
+                    f"ERROR in configuration file: Undefined "
+                    "\'base_reference_dir\' for processor {self.name}.")
             self.base_reference_url = processor_def.get('base_reference_url')
             if self.base_reference_url is None:
                 raise ProcessorGenericError(
@@ -211,6 +216,34 @@ class BaseRemoteExecutionProcessor(BaseProcessor):
         """
         raise NotImplementedError()
 
+    def _check_output_request(self, requested_output):
+        if not requested_output:
+           requested_output = set(self.metadata.get("outputs"))
+
+        allowed_modes = self.metadata.get("outputTransmission", [])
+        if isinstance(requested_output, dict):
+            for output_id, output_info in requested_output.items():
+                transmission_mode = output_info.get(
+                    "transmissionMode", "value"
+                )
+
+                if transmission_mode not in allowed_modes:
+                    raise ProcessorExecuteError(
+                        f"Invalid transmissionMode for {output_id}: "
+                        f"{transmission_mode}. Allowed values: "
+                        f"{allowed_modes}."
+                    )
+        else: # requested_output is a list, transmissionMode = default value
+            if "value" not in allowed_modes:
+                raise ProcessorExecuteError(
+                    f"Invalid transmissionMode (default = 'value'). "
+                    f"Allowed values: {allowed_modes}."
+                )
+        
+        if set(requested_output) - set(self.metadata['outputs']):
+            err_msg = 'Outputs contains unexpected parameters.'
+            raise ProcessorExecuteError(err_msg)        
+
     def execute(self, data: dict, outputs: Optional[dict] = None
                 ) -> Tuple[str, Any]:
         """
@@ -230,6 +263,8 @@ class BaseRemoteExecutionProcessor(BaseProcessor):
         os.mkdir(working_dir, mode=0o755)
 
         try:
+        # check for error on outputs request:
+            self._check_output_request(outputs)
             code_input_params = self.prepare_input(data, working_dir, outputs)
         except BaseException as ex:
             shutil.rmtree(working_dir)
@@ -327,8 +362,19 @@ class BaseRemoteExecutionProcessor(BaseProcessor):
         :returns: mimetype, process_output
 
         """
+
         # --- CASE 0: NO OUTPUT ---
 # TODO: verify if when user_requested_output={} => Return nothing
+
+        # --- CASE X: ALL REFERENCE
+# TODO: when all produced_outputs contains href
+        if not any(
+            "value" in output
+            for output in produced_outputs.values()
+        ):
+            raise ProcessorExecuteError(
+                "All outputs requested by reference: Not yet implemented."
+            )
 
         # --- CASE 1: ONE OUTPUT ONLY ---
 # TODO: verify if when user_requested_output=none => CASE 2
@@ -362,32 +408,55 @@ class BaseRemoteExecutionProcessor(BaseProcessor):
 
         for output_id, output in produced_outputs.items():
             media_type = output['mediaType']
-            value = output['value']
-
-            # prepare payload. NOTE: type(payload)==bytes
-            if output.get('encoding') == 'base64':
-                LOGGER.debug(f'output.get("encoding") == "base64"')
-                # the "value" is expected to be a "string" of a binary data encoded base64
-                payload = value.encode('utf-8')
-                transfer_encoding = "base64"
-            else:
-                if isinstance(value, (dict, list)):
-                    import json
-                    payload = json.dumps(value).encode('utf-8')
-                else:
-                    # It is expected to be a string or bytes
-                    if (type(value) == bytes):
-                        payload = value
+            if "value" in output:
+                value = output['value']
+                # prepare payload. NOTE: type(payload)==bytes
+                if output.get('encoding') == 'base64':
+                    LOGGER.debug(f'output.get("encoding") == "base64"')
+                    # the "value" is expected to be a "string" of a binary data encoded base64
                     payload = value.encode('utf-8')
-                transfer_encoding = "8bit"
+                    transfer_encoding = "base64"
+                else:
+                    if isinstance(value, (dict, list)):
+                        import json
+                        payload = json.dumps(value).encode('utf-8')
+                    else:
+                        # It is expected to be a string or bytes
+                        if (type(value) == bytes):
+                            payload = value
+                        payload = value.encode('utf-8')
+                    transfer_encoding = "8bit"
 
-            part = (
-                f"--{boundary}\r\n"
-                f"Content-Type: {media_type}\r\n"
-                f"Content-ID: <{output_id}>\r\n"
-                f"Content-Transfer-Encoding: {transfer_encoding}\r\n"
-                f"\r\n"
-            ).encode('utf-8') + payload + b"\r\n"
+                part = (
+                    f"--{boundary}\r\n"
+                    f"Content-Type: {media_type}\r\n"
+                    f"Content-ID: <{output_id}>\r\n"
+
+                    # TODO: Verify if Content-Transfer-Encoding is mandatory,
+                    # and in case it is mandatory CHECK if it is correct,
+                    # otherwise REMOVE it.
+                    f"Content-Transfer-Encoding: {transfer_encoding}\r\n"
+                    f"\r\n"
+                ).encode('utf-8') + payload + b"\r\n"
+            elif "href" in output:
+                payload = b""
+
+                part = (
+                    f"--{boundary}\r\n"
+                    f"Content-Type: {media_type}\r\n"
+                    f"Content-ID: <{output_id}>\r\n"
+                    f"Content-Location: {output['href']}\r\n"
+
+                    # TODO: Verify if Content-Transfer-Encoding is mandatory,
+                    # and in case it is mandatory CHECK if it is correct,
+                    # otherwise REMOVE it.
+
+                    # We save binary data: transfer_encoding should be binary
+                    # in this case, so should not be preset (default) for
+                    # the given content type
+                    # f"Content-Transfer-Encoding: {transfer_encoding}\r\n"
+                    f"\r\n"
+                ).encode('utf-8') + payload + b"\r\n"
 
             parts.append(part)
 

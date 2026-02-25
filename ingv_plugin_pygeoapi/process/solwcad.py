@@ -27,6 +27,7 @@
 #
 # =================================================================
 
+import json
 import logging
 import re
 
@@ -282,128 +283,181 @@ INPUT_SCHEMA = {
 
 #: Process metadata and description
 PROCESS_METADATA = {
-    'id': 'solwcad',
-    'title': 'SOLWCAD',
-    'description':
-        'Fortran code to compute the saturation surface of H2O-CO2 '
-        'fluids in silicate melts of arbitrary composition.',
-    'version': '1.0.0',
-    'jobControlOptions': [
-        'async-execute',
-        'sync-execute'
-    ],
-    'keywords': ['Fortran code', 'saturation surface', 'other keywords...'],
-    'inputs': {
-        'swinput.data': {
-          'title': INPUT_SCHEMA['properties']['swinput.data']['title'],
-          'description': INPUT_SCHEMA['properties']['swinput.data']['description'],
-          'schema': INPUT_SCHEMA['properties']['swinput.data'],
-          'minOccurs': 1,
-          'maxOccurs': 1
-        },
-        'sw.data': {
-          'title': INPUT_SCHEMA['properties']['sw.data']['title'],
-          'description': INPUT_SCHEMA['properties']['sw.data']['description'],
-          'schema': INPUT_SCHEMA['properties']['sw.data'],
-          'minOccurs': 1,
-          'maxOccurs': 1
-        }
+  # process.yaml -> processSummary.yaml
+  # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+  # Required properties:
+  # ####################
+
+  'id': 'solwcad',
+  # type string
+
+  'version': '1.0.0',
+  # type string
+
+  # Optional properties:
+  # ####################
+
+  'jobControlOptions': [
+      'async-execute',
+      'sync-execute'
+  ],
+  # type: array,
+  #   items: {type: string, enum: ['sync-execute', 'async-execute', 'dismiss']}
+
+  'outputTransmission': [
+    'value'
+  ],
+  # type: array, 
+  #   items: {type: string, enum: ['value', 'reference'], default: 'value'}
+
+  'links': [{
+    # Required:
+    'href': 'https://example.org/process',
+    # Optional:
+    'rel': 'about',
+    'type': 'text/html',
+    'hreflang': 'en-US',
+    'title': 'information'
+  }],
+  # type: array, 
+  #   items: {type: object, required: 'href', properties:
+  #       href: type: string, rel: type: string,
+  #       type: type: string, hreflang: type: string,
+  #       title: type: string }
+
+  # process.yaml -> processSummary.yaml -> descriptionType.yaml
+  # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+  # Optional properties:
+  # ####################
+
+  'title': 'SOLWCAD',
+  # type: string
+
+  'description':
+    'Fortran code to compute the saturation surface of H2O-CO2 '
+    'fluids in silicate melts of arbitrary composition.',
+  # type: string
+
+  'keywords': ['Fortran code', 'saturation surface', 'other keywords...'],
+  # type: array
+  #   items: type: string
+    
+  # 'metadata':
+  # type: array
+  #   items: {type: object, title: string, role: string, href: string}
+
+  # additionalParameters (metadata.yaml + parameters [additionalParameter.yaml]) 
+
+
+  # process.yaml
+  # >>>>>>>>>>>>
+  'inputs': {
+    'swinput.data': {
+      'title': INPUT_SCHEMA['properties']['swinput.data']['title'],
+      'description': INPUT_SCHEMA['properties']['swinput.data']['description'],
+      'schema': INPUT_SCHEMA['properties']['swinput.data'],
+      'minOccurs': 1,
+      'maxOccurs': 1
     },
-    'outputs': {
-        'solwcad.out': {
-            'title': 'Output result',
-            'description':
-                'Each record item contains the following quantities: '
-                'Pressure (Mpa); Temperature (K); Total ( kl >0) or '
-                'dissolved ( kl =-1) H2O (wt%); '
-                'Total ( kl >0) or dissolved ( kl =-1) CO2 (wt%); '
-                'H2O dissolved in the melt (wt%); '
-                'CO2 dissolved in the melt (ppm); CO2 in the fluid (wt%); '
-                'CO2 in the fluid (mol%); Amount of fluid phase '
-                'in magma (wt%); Amount of fluid phase in magma (vol%); '
-                'Density of the melt phase (kg/m3 ); Density of the gas '
-                'phase (kg/m3 ); Density of the two-phase magma (kg/m3 ); '
-                'Viscosity of the melt phase [log (Pa s)]; Viscosity of '
-                'the two-phase magma [log (Pa s)].',
-            'minOccurs': 1,
-            'maxOccurs': 'unbounded',
-            'schema': {
-                'type': 'array',
-                'minItems': 15,
-                'maxItems': 15,
-                'items': {
-                    'type': 'string',
-                    'pattern':
-                        r"^([+-]?(?:[[:digit:]]+\.|[[:digit:]]*\."
-                        r"[[:digit:]]+))(?:[Dd][+-]?[[:digit:]]+)?$",
-                    'contentMediaType': 'application/json'
-                }
-            }
-        }
-    },
-    'links': [{
-        'type': 'text/html',
-        'rel': 'about',
-        'title': 'information',
-        'href': 'https://example.org/process',
-        'hreflang': 'en-US'
-      }],
-    'examples': [
-        {
-            'payload_example': {
-                'inputs': {
-                    'swinput.data': {
-                        'value': {'ndat1': 1, 'ndat2': 2, 'kl': 0}
-                    },
-                    'sw.data': [
-                        {
-                            'value': [
-                                '1.00d8', '1273.', '.0400', '.0200', '.7653',
-                                '.0032', '.1201', '.0027', '.0246', '.0006',
-                                '.0018', '.0132', '.0378', '.0306'
-                            ]
-                        },
-                        {
-                            'value': [
-                                '2.00d8', '1173.', '.0200', '.0010', '.7053',
-                                '.0032', '.1301', '.0027', '.0146', '.0006',
-                                '.0118', '.0232', '.0378', '.0306'
-                            ]
-                        }
-                    ]
-                }
-            }
+    'sw.data': {
+      'title': INPUT_SCHEMA['properties']['sw.data']['title'],
+      'description': INPUT_SCHEMA['properties']['sw.data']['description'],
+      'schema': INPUT_SCHEMA['properties']['sw.data'],
+      'minOccurs': 1,
+      'maxOccurs': 1
+    }
+  },
+  
+  'outputs': {
+    'solwcad_out': {
+      'title': 'Output result',
+      'description':
+        'Each record item contains the following quantities: '
+        'Pressure (Mpa); Temperature (K); Total ( kl >0) or '
+        'dissolved ( kl =-1) H2O (wt%); '
+        'Total ( kl >0) or dissolved ( kl =-1) CO2 (wt%); '
+        'H2O dissolved in the melt (wt%); '
+        'CO2 dissolved in the melt (ppm); CO2 in the fluid (wt%); '
+        'CO2 in the fluid (mol%); Amount of fluid phase '
+        'in magma (wt%); Amount of fluid phase in magma (vol%); '
+        'Density of the melt phase (kg/m3 ); Density of the gas '
+        'phase (kg/m3 ); Density of the two-phase magma (kg/m3 ); '
+        'Viscosity of the melt phase [log (Pa s)]; Viscosity of '
+        'the two-phase magma [log (Pa s)].',
+      'minOccurs': 1,
+      'maxOccurs': 1,
+      'schema': {
+        'type': 'array',
+        'minItems': 1,
+        'items': {
+          'type': 'array',
+          'minItems': 15,
+          'maxItems': 15,
+          'items': {
+            'type': 'string',
+            'pattern':
+              r"^([+-]?(?:[[:digit:]]+\.|[[:digit:]]*\."
+              r"[[:digit:]]+))(?:[Dd][+-]?[[:digit:]]+)?$",
+          }
         },
-        {
-            'curl_example': (
-                "curl -k -L -X POST "
-                "\"https://epos_geoinquire.pi.ingv.it/epos_pygeoapi/processes/solwcad/execution\" "
-                "-H \"Content-Type: application/json\" "
-                "-d '{ \"inputs\":{\"swinput.data\":{\"value\":{"
-                "\"ndat1\":1,\"ndat2\":2,\"kl\":0}},"
-                "\"sw.data\":[{\"value\":"
-                "[\"1.00d8\",\"1273.\",\".0400\",\".0200\",\".7653\","
-                "\".0032\",\".1201\",\".0027\",\".0246\",\".0006\",\".0018\","
-                "\".0132\",\".0378\",\".0306\"]},"
-                "{\"value\":[\"2.00d8\",\"1173.\",\".0200\",\".0010\","
-                "\".7053\",\".0032\",\".1301\",\".0027\",\".0146\",\".0006\","
-                "\".0118\",\".0232\",\".0378\",\".0306\"]}]}}'"
-            )
+        'contentMediaType': 'application/json'
+      }
+    }
+  },
+  
+  
+  'examples': [
+    {
+      'payload_example': {
+        'inputs': {
+          'swinput.data': {
+            'value': {'ndat1': 1, 'ndat2': 2, 'kl': 0}
+          },
+          'sw.data': [
+            [
+              '1.00d8', '1273.', '.0400', '.0200', '.7653', '.0032', '.1201',
+              '.0027', '.0246', '.0006', '.0018', '.0132', '.0378', '.0306'
+            ],
+            [
+              '2.00d8', '1173.', '.0200', '.0010', '.7053', '.0032', '.1301',
+              '.0027', '.0146', '.0006', '.0118', '.0232', '.0378', '.0306'
+            ]
+          ]
         }
-    ]
+      }
+    },
+    {
+        'curl_example': (
+            "curl -k -L -X POST "
+            "\"https://epos_geoinquire.pi.ingv.it/epos_pygeoapi/processes/solwcad/execution\" "
+            "-H \"Content-Type: application/json\" "
+            "-d '{ \"inputs\":{\"swinput.data\":{\"value\":{"
+            "\"ndat1\":1,\"ndat2\":2,\"kl\":0}},"
+            "\"sw.data\":["
+            "[\"1.00d8\",\"1273.\",\".0400\",\".0200\",\".7653\","
+            "\".0032\",\".1201\",\".0027\",\".0246\",\".0006\",\".0018\","
+            "\".0132\",\".0378\",\".0306\"],"
+            "[\"2.00d8\",\"1173.\",\".0200\",\".0010\","
+            "\".7053\",\".0032\",\".1301\",\".0027\",\".0146\",\".0006\","
+            "\".0118\",\".0232\",\".0378\",\".0306\"]]}}'"
+        )
+    }
+  ]
 
     # curl localhost:5000/processes/solwcad/execution
     #     -H 'Content-Type: application/json'
     #     -d '{ "inputs" : {  "swinput.data" : { "value" :
     #         { "ndat1" : 1 , "ndat2" : 2 , "kl" : 0 } },
-    #         "sw.data" : [ { "value" : [ "1.00d8" , "1273." , ".0400" ,
+    #         "sw.data" : [ [ "1.00d8" , "1273." , ".0400" ,
     #         ".0200" , ".7653" , ".0032" , ".1201" , ".0027" , ".0246" ,
-    #         ".0006" , ".0018" , ".0132" , ".0378" , ".0306" ] },
-    #         { "value" : [ "2.00d8" , "1173." , ".0200" , ".0010" ,
+    #         ".0006" , ".0018" , ".0132" , ".0378" , ".0306" ],
+    #         [ "2.00d8" , "1173." , ".0200" , ".0010" ,
     #         ".7053" , ".0032" , ".1301" , ".0027" , ".0146" , ".0006" ,
-    #         ".0118" , ".0232" , ".0378" , ".0306" ] } ] } }
+    #         ".0118" , ".0232" , ".0378" , ".0306" ] ] } }
     #
-    # curl -k -L -X POST "https://epos_geoinquire.pi.ingv.it/epos_pygeoapi/processes/solwcad/execution" -H "Content-Type: application/json" -d '{ "inputs" : {  "swinput.data" : { "value" : { "ndat1" : 1 , "ndat2" : 2 , "kl" : 0 } }, "sw.data" : [ { "value" : [ "1.00d8" , "1273." , ".0400" , ".0200" , ".7653" , ".0032" , ".1201" , ".0027" , ".0246" , ".0006" , ".0018" , ".0132" , ".0378" , ".0306" ] }, { "value" : [ "2.00d8" , "1173." , ".0200" , ".0010" , ".7053" , ".0032" , ".1301" , ".0027" , ".0146" , ".0006" , ".0118" , ".0232" , ".0378" , ".0306" ] } ] } }'
+    # curl -k -L -X POST "https://epos_geoinquire.pi.ingv.it/epos_pygeoapi/processes/solwcad/execution" -H "Content-Type: application/json" -d '{ "inputs" : {  "swinput.data" : { "value" : { "ndat1" : 1 , "ndat2" : 2 , "kl" : 0 } }, "sw.data" : [ [ "1.00d8" , "1273." , ".0400" , ".0200" , ".7653" , ".0032" , ".1201" , ".0027" , ".0246" , ".0006" , ".0018" , ".0132" , ".0378" , ".0306" ], [ "2.00d8" , "1173." , ".0200" , ".0010" , ".7053" , ".0032" , ".1301" , ".0027" , ".0146" , ".0006" , ".0118" , ".0232" , ".0378" , ".0306" ] ] } }'
     #
 }
 
@@ -418,12 +472,32 @@ class SolwcadProcessor(BaseRemoteExecutionProcessor):
         :returns: pygeoapi.process.solwcad.SolwcadProcessor
         """
         super().__init__(processor_def, PROCESS_METADATA)
+        self.supports_outputs = True
 
     def prepare_output(self, info, working_dir, outputs):
+        # Checks for error on outputs request performed by prepare_input().
+
+        # Common part to all prepare_output()
+        if isinstance(outputs, dict):
+            req_outputs = outputs
+        else:
+            req_outputs = {}
+            base_outputs = outputs if outputs else set(
+                self.metadata['outputs'].keys()
+            )
+            for output_id in base_outputs:
+                # set default transmissionMode
+                req_outputs[output_id] = {'transmissionMode': 'value'}
+                                    
+        # Prepare outputs
+        # ###############
+
+        # output file-name returned as code parameter
         code_params = info['params']
         solwcad_out = []
-        with open(str(Path(working_dir) / code_params['-output']), mode='r+t'
-                  ) as output_file:
+        with open(
+            str(Path(working_dir) / code_params['-output']), mode='r+t'
+        ) as output_file:
             while len(line_items := output_file.readline().strip('\n')) > 0:
                 fields = line_items.split()
                 if len(fields) != 15:
@@ -432,34 +506,49 @@ class SolwcadProcessor(BaseRemoteExecutionProcessor):
                     )
                 solwcad_out.append(fields)
 
-        possible_outputs = self.metadata['outputs']
-        if not bool(outputs):
-            requested_outputs = possible_outputs
-        else:
-            requested_outputs = outputs
-
-        # Prepare outputs
-        # ###############
         produced_outputs = {}
-        
-        if 'solwcad.out' in requested_outputs:
-            produced_outputs['solwcad.out'] = {
-                'value': solwcad_out,
-                'mediaType': 'application/json'
-        }
+        try:
+            if 'solwcad_out' in req_outputs:
+                value = solwcad_out
+                produced_outputs['solwcad_out'] = {'mediaType': 'application/json'}
+                transmission_mode = req_outputs['solwcad_out'].get(
+                    'transmissionMode', ''
+                )
+                if transmission_mode == "value":
+                    produced_outputs['solwcad_out']['value'] =  value
+                elif (transmission_mode == "reference"):
+                    dst_file = Path(self.base_reference_dir) / (
+                        f"{self.job_id}_solwcad_out.json"
+                    )
+
+                    with open(dst_file, 'w', encoding='utf-8') as json_file:
+                        json.dump(value, json_file)
+
+                    file_href = (
+                        f"{self.base_reference_url}"
+                        f"{self.job_id}_solwcad_out.json"
+                    )
+                    produced_outputs['solwcad_out']['href'] = file_href
+                else: # should never happen: cheched in _check_output_request()
+                    raise ProcessorExecuteError("Program error.")
+
+        except OSError as e:
+            LOGGER.error(f"Errore apertura file: {e}")
+            raise ProcessorExecuteError(
+                f"Program error: please report to the service provider "
+                "for this job_id: {info['job_id']}."
+            )
+                
         return self.format_output(produced_outputs, outputs)
 
     def prepare_input(self, data, working_dir, outputs):
-        # check for error on outputs request:
-        if bool(outputs):
-            requested_output = set(
-                outputs.keys() if isinstance(outputs, dict) else outputs
-            )
-            if requested_output - set(self.metadata['outputs']):
-                err_msg = 'Outputs contains unexpected parameters.'
-                raise ProcessorExecuteError(err_msg)
-
         try:
+            # NOTE: input attribute "swinput.data" is a complex object,
+            # therefore can either be trasferred by "value" or by "reference".
+            # Currently only "value" is supported (could improve return
+            # with proper code);
+            # input attribute "sw.data" is an array and the option
+            # "value"/"reference" does not apply.
           swinput = data['swinput.data']['value']
           sw = data['sw.data']
         except (KeyError, TypeError) as err:
@@ -469,14 +558,13 @@ class SolwcadProcessor(BaseRemoteExecutionProcessor):
         # Verify parameters matching definitions.
         LOGGER.debug(f'Validating input')
         validation_errors = validate_json(
-            INPUT_SCHEMA['properties']['swinput.data'], 
-            data['swinput.data']['value']
+            INPUT_SCHEMA['properties']['swinput.data'], swinput
         )
         if validation_errors:
             raise ProcessorExecuteError(validation_errors)
+        
         validation_errors = validate_json(
-            INPUT_SCHEMA['properties']['sw.data'], 
-            data['swinput.data']
+            INPUT_SCHEMA['properties']['sw.data'], sw
         )
         if validation_errors:
             raise ProcessorExecuteError(validation_errors)

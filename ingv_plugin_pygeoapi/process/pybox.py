@@ -27,10 +27,12 @@
 #
 # =================================================================
 
+import json
 import logging
 import re
 import copy
 import base64
+import shutil
 import uuid
 
 from pathlib import Path
@@ -170,7 +172,7 @@ PROCESS_METADATA = {
   'version': '1.0.0',
   # type string
 
-  # Optional properties:
+  # optional properties:
   # ####################
 
   'jobControlOptions': [
@@ -180,7 +182,8 @@ PROCESS_METADATA = {
   #   items: {type: string, enum: ['sync-execute', 'async-execute', 'dismiss']}
     
   'outputTransmission': [
-      'value', 'reference'
+      'value',
+      'reference'
   ],
   # type: array, 
   #   items: {type: string, enum: ['value', 'reference'], default: 'value'}
@@ -188,7 +191,7 @@ PROCESS_METADATA = {
   'links': [{
     # Required:
     'href': 'https://example.org/process',
-    # Optional:
+    # optional:
     'rel': 'about',
     'type': 'text/html',
     'hreflang': 'en-US',
@@ -348,9 +351,7 @@ PROCESS_METADATA = {
         'inputs': {
           'lon': 90.88, 'lat': 14.47, 'l0': 150, 'h0': 150, 'theta0': 500,
           'multiple_values': [{
-            'value': {
-              'eps0': 0.01, 'rhos': 1000, 'ds': 0.0001
-            }
+            'eps0': 0.01, 'rhos': 1000, 'ds': 0.0001
           }],
           'dt': 0.5, 'margin': 5000,
         },
@@ -369,8 +370,8 @@ PROCESS_METADATA = {
           "\"theta0\":500,\"multiple_values\":[{"
           "\"eps0\":0.01,\"rhos\":1000,\"ds\":0.0001}],"
           "\"dt\":0.5,\"margin\":5000},"
-          "\"outputs\":[\"input_data\",\"dem\",\"spatial_evolution\","
-          "\"deposit_thickness\"]}'"
+          "\"outputs\":{\"dem\":{\"transmissionMode\": \"reference\"},"
+          "\"spatial_evolution\":{\"transmissionMode\": \"value\"}}}'"
     }
   ]
   # curl -k -L -X POST "https://epos_geoinquire.pi.ingv.it/epos_pygeoapi/processes/pybox/execution" -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" :  -90.88, "lat" : 15.47, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : ["input_data", "dem", "spatial_evolution"] }'
@@ -402,59 +403,125 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
         self.base_output_filename = "out_file"
 
     def prepare_output(self, info, working_dir, outputs):
-        # Checks for error on outputs request performed by prepare_input().
+        # Checks for error on outputs request already performed.
 
-        possible_outputs = self.metadata['outputs']
-        if not bool(outputs):
-            requested_outputs = possible_outputs
+        # Common part to all prepare_output()
+        if isinstance(outputs, dict):
+            req_outputs = outputs
         else:
-            requested_outputs = outputs
-
+            req_outputs = {}
+            base_outputs = outputs if outputs else set(
+                self.metadata['outputs'].keys()
+            )
+            for output_id in base_outputs:
+                # set default transmissionMode
+                req_outputs[output_id] = {'transmissionMode': 'value'}
+                                    
         # Prepare outputs
         # ###############
         produced_outputs = {}
         try:
-            if 'input_data' in requested_outputs:
-                with open(
-                    Path(working_dir) /
-                    f"{self.base_output_filename}_params.txt"
-                ) as output_file:
-                    contenuto = output_file.read()
-                if requested_outputs.get('transmissionMode') == "value":
-                    produced_outputs['input_data'] = {
-                        'value': contenuto,
-                        'mediaType': 'text/plain'
-                    }
+            if 'input_data' in req_outputs:
+                produced_outputs['input_data'] = {'mediaType': 'text/plain'}
+                transmission_mode = req_outputs['input_data'].get(
+                    'transmissionMode', ''
+                )
+                if transmission_mode == "value":
+                    with open(
+                        Path(working_dir) /
+                        f"{self.base_output_filename}_params.txt"
+                    ) as output_file:
+                        contenuto = output_file.read()
+                    produced_outputs['input_data']['value'] = contenuto
+                elif (transmission_mode == "reference"):
+                    src_file = Path(working_dir) / (
+                        f"{self.base_output_filename}_params.txt"
+                    )
+                    dst_file = Path(self.base_reference_dir) / (
+                        f"{self.job_id}_input_data.txt"
+                    )
+                    shutil.copy(src_file, dst_file)
 
-            if 'dem' in requested_outputs:
-                with open(
-                    Path(working_dir) / 
-                    f"{self.base_output_filename}.tif", "rb"
-                ) as output_file:
-                    contenuto_bytes = output_file.read()
+                    file_href = (
+                        f"{self.base_reference_url}"
+                        f"{self.job_id}_input_data.txt"
+                    )
+                    produced_outputs['input_data']['href'] = file_href
+                else: # should never happen: cheched in _check_output_request()
+                    raise ProcessorExecuteError("Program error.")
+ 
+            if 'dem' in req_outputs:
                 produced_outputs['dem'] = {
-                    # ref. standard, pag 63, "imagesOutput"
-                    # Return a "string" coded base64 (which is what is expected
-                    # for "binary"): ref. standard, pag. 45, Note 7
-                    'value': base64.b64encode(contenuto_bytes).decode('utf-8'),
-                    'encoding': 'base64',
                     'mediaType': 'application/tiff; application=geotiff'
                 }
+                transmission_mode = req_outputs['dem'].get(
+                    'transmissionMode', ''
+                )
+                if transmission_mode == "value":
+                    with open(
+                        Path(working_dir) / 
+                        f"{self.base_output_filename}.tif", "rb"
+                    ) as output_file:
+                        contenuto_bytes = output_file.read()
+                    # ref. standard, pag 63, "imagesOutput"
+                    # Return a "string" coded base64 (which is what is
+                    # expected for "binary"): ref. standard, pag. 45, Note 7
+                    produced_outputs['dem']['value'] = base64.b64encode(
+                        contenuto_bytes
+                    ).decode('utf-8')
+                    produced_outputs['dem']['encoding'] = 'base64'
+                elif (transmission_mode == "reference"):
+                    src_file = Path(working_dir) / (
+                        f"{self.base_output_filename}.tif"
+                    )
+                    dst_file = Path(self.base_reference_dir) / (
+                        f"{self.job_id}_dem.tif"
+                    )
+                    shutil.copy(src_file, dst_file)
+
+                    file_href = (
+                        f"{self.base_reference_url}"
+                        f"{self.job_id}_dem.tif"
+                    )
+                    produced_outputs['dem']['href'] = file_href
+                else: # should never happen: cheched in _check_output_request()
+                    raise ProcessorExecuteError("Program error.")
             
-            if 'invasion_map' in requested_outputs:
-                with open(
-                    Path(working_dir) / 
-                    f"{self.base_output_filename}_EC2.tif", "rb"
-                ) as output_file:
-                    contenuto_bytes = output_file.read()
+            if 'invasion_map' in req_outputs:
                 produced_outputs['invasion_map'] = {
-                    # ref. standard, pag 63, "imagesOutput"
-                    'value': base64.b64encode(contenuto_bytes).decode('utf-8'),
-                    'encoding': 'base64',
                     'mediaType': 'application/tiff; application=geotiff'
                 }
+                transmission_mode = req_outputs['invasion_map'].get(
+                    'transmissionMode', ''
+                )
+                if transmission_mode == "value":
+                    with open(
+                        Path(working_dir) / 
+                        f"{self.base_output_filename}_EC2.tif", "rb"
+                    ) as output_file:
+                        contenuto_bytes = output_file.read()
+                    produced_outputs['invasion_map']['value'] = (
+                        base64.b64encode(contenuto_bytes).decode('utf-8')
+                    )
+                    produced_outputs['invasion_map']['encoding'] = 'base64'
+                elif (transmission_mode == "reference"):
+                    src_file = Path(working_dir) / (
+                        f"{self.base_output_filename}_EC2.tif"
+                    )
+                    dst_file = Path(self.base_reference_dir) / (
+                        f"{self.job_id}_invasion_map.tif"
+                    )
+                    shutil.copy(src_file, dst_file)
+
+                    file_href = (
+                        f"{self.base_reference_url}"
+                        f"{self.job_id}_invasion_map.tif"
+                    )
+                    produced_outputs['invasion_map']['href'] = file_href
+                else: # should never happen: cheched in _check_output_request()
+                    raise ProcessorExecuteError("Program error.")
             
-            if 'spatial_evolution' in requested_outputs:
+            if 'spatial_evolution' in req_outputs:
                 x_length = []
                 y_height = []
                 y_rho_c = []
@@ -572,23 +639,46 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
                             'values': eps_values
                         }
                     )
-                produced_outputs['spatial_evolution'] = {
-                    'value': {
-                        'chartType': 'line',
-                        'domain': {
-                            'key': 'length(m)',
-                            'label': 'length(m)',
-                            'description':
-                                'distance of the current front from the vent',
-                            'unit': 'm',
-                            'values': x_length
-                        },
-                        'series': series
+
+                value = {
+                    'chartType': 'line',
+                    'domain': {
+                        'key': 'length(m)',
+                        'label': 'length(m)',
+                        'description': (
+                            'distance of the current front from the vent'
+                        ),
+                        'unit': 'm',
+                        'values': x_length
                     },
-                    'mediaType': 'application/json'
+                    'series': series
                 }
 
-            if 'deposit_thickness' in requested_outputs:
+                produced_outputs['spatial_evolution'] = {
+                    'mediaType': 'application/json'
+                }
+                transmission_mode = req_outputs['spatial_evolution'].get(
+                    'transmissionMode', ''
+                )
+                if transmission_mode == "value":
+                    produced_outputs['spatial_evolution']['value'] =  value
+                elif (transmission_mode == "reference"):
+                    dst_file = Path(self.base_reference_dir) / (
+                        f"{self.job_id}_spatial_evolution.json"
+                    )
+
+                    with open(dst_file, 'w', encoding='utf-8') as json_file:
+                        json.dump(value, json_file)
+
+                    file_href = (
+                        f"{self.base_reference_url}"
+                        f"{self.job_id}_spatial_evolution.json"
+                    )
+                    produced_outputs['invasion_map']['href'] = file_href
+                else: # should never happen: cheched in _check_output_request()
+                    raise ProcessorExecuteError("Program error.")
+
+            if 'deposit_thickness' in req_outputs:
                 x_position = []
                 y_cumulative = []
                 # variable number of columns (y_thikness_0, y_thikness_1, ...)
@@ -651,22 +741,46 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
                             'values': thikness_values
                         }
                     )
-                produced_outputs['deposit_thickness'] = {
-                    'value': {
-                        'chartType': 'line',
-                        'domain': {
-                            'key': 'current front position(m)',
-                            'label': 'current front position(m)',
-                            'description':
-                                'front distance from vent at the moment '
-                                'of deposition',
-                            'unit': 'm',
-                            'values': x_position
-                        },
-                        'series': series
+                
+                value = {
+                    'chartType': 'line',
+                    'domain': {
+                        'key': 'current front position(m)',
+                        'label': 'current front position(m)',
+                        'description': (
+                            'front distance from vent at the moment '
+                            'of deposition'
+                        ),
+                        'unit': 'm',
+                        'values': x_position
                     },
+                    'series': series
+                }
+
+                produced_outputs['deposit_thickness'] = {
                     'mediaType': 'application/json'
                 }
+                transmission_mode = req_outputs['deposit_thickness'].get(
+                    'transmissionMode', ''
+                )
+                if transmission_mode == "value":
+                    produced_outputs['deposit_thickness']['value'] =  value
+                elif (transmission_mode == "reference"):
+                    dst_file = Path(self.base_reference_dir) / (
+                        f"{self.job_id}_deposit_thickness.json"
+                    )
+
+                    with open(dst_file, 'w', encoding='utf-8') as json_file:
+                        json.dump(value, json_file)
+
+                    file_href = (
+                        f"{self.base_reference_url}"
+                        f"{self.job_id}_deposit_thickness.json"
+                    )
+                    produced_outputs['deposit_thickness']['href'] = file_href
+                else: # should never happen: cheched in _check_output_request()
+                    raise ProcessorExecuteError("Program error.")
+
         except OSError as e:
             LOGGER.error(f"Errore apertura file: {e}")
             raise ProcessorExecuteError(
@@ -677,17 +791,14 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
         return self.format_output(produced_outputs, outputs)
 
     def prepare_input(self, data, working_dir, outputs):
-        # check for error on outputs request:
-        if bool(outputs):
-            requested_output = set(
-                outputs.keys() if isinstance(outputs, dict) else outputs
-            )
-            if requested_output - set(self.metadata['outputs']):
-                err_msg = 'Outputs contains unexpected parameters.'
-                raise ProcessorExecuteError(err_msg)
-
-        # Verify parameters matching definitions.
+        # Verify input parameters matching definitions.
         LOGGER.debug(f'Validating input')
+        # NOTE: input attributes are all simple values or array,
+        # they are never "complex object" where there is the option "value"
+        # or "reference".
+        # The items of the array "multiple_values" are complex object, but
+        # they are not input attributes, and the option "value"/"reference"
+        # does not apply.
         validation_errors = validate_json(
             INPUT_SCHEMA, data
         )
