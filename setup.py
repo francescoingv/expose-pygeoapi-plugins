@@ -6,7 +6,7 @@ this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text(encoding="utf-8")
 
 setup(
-    name="pygeoapiingv_plugin_pygeoapi",                # Nome del pacchetto
+    name="ingv_plugin_pygeoapi",                # Nome del pacchetto
     version="0.1.0",                # Versione iniziale
     description="Plugin INGV per pygeoapi",
     long_description=long_description,

@@ -39,7 +39,7 @@ from pygeoapi.process.base import (
     ProcessorExecuteError,
 )
 from ingv_plugin_pygeoapi.process.base_remote_execution import (
-    BaseRemoteExecutionProcessor,
+    BaseRemoteExecutionProcessorLocalReference,
     validate_json,
     CHART_SCHEMA,
 )
@@ -600,10 +600,10 @@ PROCESS_METADATA = {
     {
       'curl_example': (
         "curl -k -L -X POST "
-        "\"https://epos_geoinquire.pi.ingv.it/epos_pygeoapi/processes/conduit/execution\" "
+        "\"https://epos_geoinquire.pi.ingv.it/geoinquire/processes/conduit/execution\" "
         "-H \"Content-Type: application/json\" "
         "-d '{\"inputs\":"
-              "{\"conponents\":"
+              "{\"components\":"
                 "{\"value\":"
                   "{\"fg\":1.0e8,\"p\":1.0e8,\"t\":1050,"
                     "\"d\":60,\"l\":4000,\"sio2\":0.7669,\"tio2\":0.0012,"
@@ -621,12 +621,12 @@ PROCESS_METADATA = {
   ]
   # curl localhost:5000/processes/conduit/execution -H 'Content-Type: application/json' -d '{ "inputs" : { "components" : { "value" : {"fg": 1.0e8, "p": 1.0e8, "t": 1050.0e0, "d": 60.0e0, "l": 4000.0e0, "sio2": 0.7669, "tio2": 0.0012, "al2o3": 0.1322, "fe2o3": 0.0039, "feo": 0.0038, "mno": 0.0007, "mgo": 0.0006, "cao": 0.0080, "na2o": 0.0300, "k2o": 0.0512, "h2o": 0.0500e0, "co2": 0.0200e0, "fe": 0.2, "pd": 0.9, "dp": 200e-6, "ds": 200e-6, "dc": 200e-6, "c": 0.1, "den": 2800.0e0 } } }, "outputs" : { "chart_1" : { "transmissionMode": "value" }, "chart_2" : { "transmissionMode": "value" } } }'
   # curl localhost:5000/processes/conduit/execution -H 'Content-Type: application/json' -H 'Prefer: respond-async' -d '{ "inputs" : { "components" : { "value" : {"fg": 1.0e8, "p": 1.0e8, "t": 1050.0e0, "d": 60.0e0, "l": 4000.0e0, "sio2": 0.7669, "tio2": 0.0012, "al2o3": 0.1322, "fe2o3": 0.0039, "feo": 0.0038, "mno": 0.0007, "mgo": 0.0006, "cao": 0.0080, "na2o": 0.0300, "k2o": 0.0512, "h2o": 0.0500e0, "co2": 0.0200e0, "fe": 0.2, "pd": 0.9, "dp": 200e-6, "ds": 200e-6, "dc": 200e-6, "c": 0.1, "den": 2800.0e0 } } }, "outputs" : { "chart_1" : { "transmissionMode": "value" }, "chart_2" : { "transmissionMode": "value" } } }'
-  # curl -k -L -X POST "https://epos_geoinquire.pi.ingv.it/epos_pygeoapi/processes/conduit/execution" -H "Content-Type: application/json" -d '{ "inputs" : { "components" : { "value" : {"fg": 1.0e8, "p": 1.0e8, "t": 1050.0e0, "d": 60.0e0, "l": 4000.0e0, "sio2": 0.7669, "tio2": 0.0012, "al2o3": 0.1322, "fe2o3": 0.0039, "feo": 0.0038, "mno": 0.0007, "mgo": 0.0006, "cao": 0.0080, "na2o": 0.0300, "k2o": 0.0512, "h2o": 0.0500e0, "co2": 0.0200e0, "fe": 0.2, "pd": 0.9, "dp": 200e-6, "ds": 200e-6, "dc": 200e-6, "c": 0.1, "den": 2800.0e0 } } }, "outputs" : { "chart_1" : { "transmissionMode": "value" }, "chart_2" : { "transmissionMode": "value" } } }'
+  # curl -k -L -X POST "https://epos_geoinquire.pi.ingv.it/geoinquire/processes/conduit/execution" -H "Content-Type: application/json" -d '{ "inputs" : { "components" : { "value" : {"fg": 1.0e8, "p": 1.0e8, "t": 1050.0e0, "d": 60.0e0, "l": 4000.0e0, "sio2": 0.7669, "tio2": 0.0012, "al2o3": 0.1322, "fe2o3": 0.0039, "feo": 0.0038, "mno": 0.0007, "mgo": 0.0006, "cao": 0.0080, "na2o": 0.0300, "k2o": 0.0512, "h2o": 0.0500e0, "co2": 0.0200e0, "fe": 0.2, "pd": 0.9, "dp": 200e-6, "ds": 200e-6, "dc": 200e-6, "c": 0.1, "den": 2800.0e0 } } }, "outputs" : { "chart_1" : { "transmissionMode": "value" }, "chart_2" : { "transmissionMode": "value" } } }'
   #
 }
 
 
-class ConduitProcessor(BaseRemoteExecutionProcessor):
+class ConduitProcessor(BaseRemoteExecutionProcessorLocalReference):
     """Conduit Processor example"""
     def __init__(self, processor_def):
         """
@@ -638,7 +638,7 @@ class ConduitProcessor(BaseRemoteExecutionProcessor):
         super().__init__(processor_def, PROCESS_METADATA)
         self.supports_outputs = True
 
-    def prepare_output(self, info, working_dir, outputs):
+    def prepare_output(self, info, working_path: Path, outputs):
         # Checks for error on outputs request performed by prepare_input().
 
         # Common part to all prepare_output()
@@ -668,7 +668,7 @@ class ConduitProcessor(BaseRemoteExecutionProcessor):
 
         produced_outputs = {}
         try:
-            with open(str(Path(working_dir) / out_file_name)) as output_file:
+            with open(working_path / out_file_name) as output_file:
                 for line in output_file:
                     # Remove spaces and split values
                     parts = line.split()
@@ -711,7 +711,7 @@ class ConduitProcessor(BaseRemoteExecutionProcessor):
                 if transmission_mode == "value":
                     produced_outputs['chart_1']['value'] =  value
                 elif (transmission_mode == "reference"):
-                    dst_file = Path(self.base_reference_dir) / (
+                    dst_file = self.base_reference_path / (
                         f"{self.job_id}_chart_1.json"
                     )
 
@@ -758,7 +758,7 @@ class ConduitProcessor(BaseRemoteExecutionProcessor):
                 if transmission_mode == "value":
                     produced_outputs['chart_2']['value'] =  value
                 elif (transmission_mode == "reference"):
-                    dst_file = Path(self.base_reference_dir) / (
+                    dst_file = self.base_reference_path / (
                         f"{self.job_id}_chart_2.json"
                     )
 
@@ -800,7 +800,7 @@ class ConduitProcessor(BaseRemoteExecutionProcessor):
                 if transmission_mode == "value":
                     produced_outputs['chart_3']['value'] =  value
                 elif (transmission_mode == "reference"):
-                    dst_file = Path(self.base_reference_dir) / (
+                    dst_file = self.base_reference_path / (
                         f"{self.job_id}_chart_3.json"
                     )
 
@@ -821,14 +821,12 @@ class ConduitProcessor(BaseRemoteExecutionProcessor):
                     'transmissionMode', ''
                 )
                 if transmission_mode == "value":
-                    with open(
-                        str(Path(working_dir) / out_file_name)
-                    ) as f:
+                    with open(working_path / out_file_name) as f:
                         contenuto = f.read()
                     produced_outputs['outfile']['value'] = contenuto
                 elif (transmission_mode == "reference"):
-                    src_file = str(Path(working_dir) / out_file_name)
-                    dst_file = Path(self.base_reference_dir) / (
+                    src_file = working_path / out_file_name
+                    dst_file = self.base_reference_path / (
                         f"{self.job_id}_outfile.csv"
                     )
                     shutil.copy(src_file, dst_file)
@@ -850,7 +848,7 @@ class ConduitProcessor(BaseRemoteExecutionProcessor):
 
         return self.format_output(produced_outputs, outputs)
 
-    def prepare_input(self, data, working_dir, outputs):
+    def prepare_input(self, data, working_path: Path, outputs):
         try:
             # NOTE: the input attribute "components" is a complex object,
             # therefore can either be trasferred by "value" or by "reference".

@@ -38,7 +38,7 @@ from pygeoapi.process.base import (
     #    ProcessorGenericError,
 )
 from ingv_plugin_pygeoapi.process.base_remote_execution import (
-    BaseRemoteExecutionProcessor,
+    BaseRemoteExecutionProcessorLocalReference,
     validate_json,
 )
 
@@ -431,7 +431,7 @@ PROCESS_METADATA = {
     {
         'curl_example': (
             "curl -k -L -X POST "
-            "\"https://epos_geoinquire.pi.ingv.it/epos_pygeoapi/processes/solwcad/execution\" "
+            "\"https://epos_geoinquire.pi.ingv.it/geoinquire/processes/solwcad/execution\" "
             "-H \"Content-Type: application/json\" "
             "-d '{ \"inputs\":{\"swinput.data\":{\"value\":{"
             "\"ndat1\":1,\"ndat2\":2,\"kl\":0}},"
@@ -457,12 +457,12 @@ PROCESS_METADATA = {
     #         ".7053" , ".0032" , ".1301" , ".0027" , ".0146" , ".0006" ,
     #         ".0118" , ".0232" , ".0378" , ".0306" ] ] } }
     #
-    # curl -k -L -X POST "https://epos_geoinquire.pi.ingv.it/epos_pygeoapi/processes/solwcad/execution" -H "Content-Type: application/json" -d '{ "inputs" : {  "swinput.data" : { "value" : { "ndat1" : 1 , "ndat2" : 2 , "kl" : 0 } }, "sw.data" : [ [ "1.00d8" , "1273." , ".0400" , ".0200" , ".7653" , ".0032" , ".1201" , ".0027" , ".0246" , ".0006" , ".0018" , ".0132" , ".0378" , ".0306" ], [ "2.00d8" , "1173." , ".0200" , ".0010" , ".7053" , ".0032" , ".1301" , ".0027" , ".0146" , ".0006" , ".0118" , ".0232" , ".0378" , ".0306" ] ] } }'
+    # curl -k -L -X POST "https://epos_geoinquire.pi.ingv.it/geoinquire/processes/solwcad/execution" -H "Content-Type: application/json" -d '{ "inputs" : {  "swinput.data" : { "value" : { "ndat1" : 1 , "ndat2" : 2 , "kl" : 0 } }, "sw.data" : [ [ "1.00d8" , "1273." , ".0400" , ".0200" , ".7653" , ".0032" , ".1201" , ".0027" , ".0246" , ".0006" , ".0018" , ".0132" , ".0378" , ".0306" ], [ "2.00d8" , "1173." , ".0200" , ".0010" , ".7053" , ".0032" , ".1301" , ".0027" , ".0146" , ".0006" , ".0118" , ".0232" , ".0378" , ".0306" ] ] } }'
     #
 }
 
 
-class SolwcadProcessor(BaseRemoteExecutionProcessor):
+class SolwcadProcessor(BaseRemoteExecutionProcessorLocalReference):
     """Solwcad Processor example"""
     def __init__(self, processor_def):
         """
@@ -474,7 +474,7 @@ class SolwcadProcessor(BaseRemoteExecutionProcessor):
         super().__init__(processor_def, PROCESS_METADATA)
         self.supports_outputs = True
 
-    def prepare_output(self, info, working_dir, outputs):
+    def prepare_output(self, info, working_path: Path, outputs):
         # Checks for error on outputs request performed by prepare_input().
 
         # Common part to all prepare_output()
@@ -496,7 +496,7 @@ class SolwcadProcessor(BaseRemoteExecutionProcessor):
         code_params = info['params']
         solwcad_out = []
         with open(
-            str(Path(working_dir) / code_params['-output']), mode='r+t'
+            working_path / code_params['-output'], mode='r+t'
         ) as output_file:
             while len(line_items := output_file.readline().strip('\n')) > 0:
                 fields = line_items.split()
@@ -517,7 +517,7 @@ class SolwcadProcessor(BaseRemoteExecutionProcessor):
                 if transmission_mode == "value":
                     produced_outputs['solwcad_out']['value'] =  value
                 elif (transmission_mode == "reference"):
-                    dst_file = Path(self.base_reference_dir) / (
+                    dst_file = Path(self.base_reference_path) / (
                         f"{self.job_id}_solwcad_out.json"
                     )
 
@@ -541,7 +541,7 @@ class SolwcadProcessor(BaseRemoteExecutionProcessor):
                 
         return self.format_output(produced_outputs, outputs)
 
-    def prepare_input(self, data, working_dir, outputs):
+    def prepare_input(self, data, working_path: Path, outputs):
         try:
             # NOTE: input attribute "swinput.data" is a complex object,
             # therefore can either be trasferred by "value" or by "reference".
@@ -692,7 +692,7 @@ class SolwcadProcessor(BaseRemoteExecutionProcessor):
         # ###############################################
         swinput_filename = "swinput.data"
         # The file must not exist, otherwise there is a problem!
-        with open(str(Path(working_dir) / swinput_filename),
+        with open(working_path / swinput_filename,
                   mode='x+t') as swinput_file:
             swinput_file.write(str(swinput['ndat1']) + '\t')
             swinput_file.write(str(swinput['ndat2']) + '\t')
@@ -704,7 +704,7 @@ class SolwcadProcessor(BaseRemoteExecutionProcessor):
 
         sw_filename = "sw.data"
         # The file must not exist, otherwise there is a problem!
-        with open(str(Path(working_dir) / sw_filename), mode='x+t') as sw_file:
+        with open(working_path / sw_filename, mode='x+t') as sw_file:
             for line in sw:
                 for value in line:
                     sw_file.write(str(value) + '\t')

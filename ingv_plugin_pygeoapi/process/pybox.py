@@ -39,9 +39,10 @@ from pathlib import Path
 
 from pygeoapi.process.base import (
     ProcessorExecuteError,
+    ProcessorGenericError,
 )
 from ingv_plugin_pygeoapi.process.base_remote_execution import (
-    BaseRemoteExecutionProcessor,
+    BaseRemoteExecutionProcessorLocalReference,
     validate_json,
     CHART_SCHEMA,
 )
@@ -364,7 +365,7 @@ PROCESS_METADATA = {
     {
       'curl_example': 
           "curl -k -L -X POST "
-          "\"https://epos_geoinquire.pi.ingv.it/epos_pygeoapi/processes/pybox/execution\" "
+          "\"https://epos_geoinquire.pi.ingv.it/geoinquire/processes/pybox/execution\" "
           "-H \"Content-Type: application/json\" "
           "-d '{\"inputs\":{\"lon\":-90.88,\"lat\":15.47,\"l0\":150,\"h0\":150,"
           "\"theta0\":500,\"multiple_values\":[{"
@@ -374,7 +375,7 @@ PROCESS_METADATA = {
           "\"spatial_evolution\":{\"transmissionMode\": \"value\"}}}'"
     }
   ]
-  # curl -k -L -X POST "https://epos_geoinquire.pi.ingv.it/epos_pygeoapi/processes/pybox/execution" -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" :  -90.88, "lat" : 15.47, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : ["input_data", "dem", "spatial_evolution"] }'
+  # curl -k -L -X POST "https://epos_geoinquire.pi.ingv.it/geoinquire/processes/pybox/execution" -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" :  -90.88, "lat" : 15.47, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : ["input_data", "dem", "spatial_evolution"] }'
   # per asincrono aggiungere: -H "Prefer: respond-async"
 
   # curl localhost:5000/processes/pybox/execution 
@@ -388,8 +389,10 @@ PROCESS_METADATA = {
 }
 
 
-class PyboxProcessor(BaseRemoteExecutionProcessor):
-    """Pybox Processor example"""
+class PyboxProcessor(BaseRemoteExecutionProcessorLocalReference):
+    """
+    PyboxProcessor
+    """
     def __init__(self, processor_def):
         """
         Initialize object
@@ -402,7 +405,7 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
 
         self.base_output_filename = "out_file"
 
-    def prepare_output(self, info, working_dir, outputs):
+    def prepare_output(self, info, working_path: Path, outputs):
         # Checks for error on outputs request already performed.
 
         # Common part to all prepare_output()
@@ -428,16 +431,18 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
                 )
                 if transmission_mode == "value":
                     with open(
-                        Path(working_dir) /
+                        working_path / 
                         f"{self.base_output_filename}_params.txt"
                     ) as output_file:
                         contenuto = output_file.read()
                     produced_outputs['input_data']['value'] = contenuto
                 elif (transmission_mode == "reference"):
-                    src_file = Path(working_dir) / (
+                    src_file = (
+                        working_path /
                         f"{self.base_output_filename}_params.txt"
                     )
-                    dst_file = Path(self.base_reference_dir) / (
+                    dst_file = (
+                        self.base_reference_path /
                         f"{self.job_id}_input_data.txt"
                     )
                     shutil.copy(src_file, dst_file)
@@ -459,8 +464,7 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
                 )
                 if transmission_mode == "value":
                     with open(
-                        Path(working_dir) / 
-                        f"{self.base_output_filename}.tif", "rb"
+                        working_path / f"{self.base_output_filename}.tif", "rb"
                     ) as output_file:
                         contenuto_bytes = output_file.read()
                     # ref. standard, pag 63, "imagesOutput"
@@ -471,10 +475,12 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
                     ).decode('utf-8')
                     produced_outputs['dem']['encoding'] = 'base64'
                 elif (transmission_mode == "reference"):
-                    src_file = Path(working_dir) / (
+                    src_file = (
+                        working_path / 
                         f"{self.base_output_filename}.tif"
                     )
-                    dst_file = Path(self.base_reference_dir) / (
+                    dst_file = (
+                        self.base_reference_path /
                         f"{self.job_id}_dem.tif"
                     )
                     shutil.copy(src_file, dst_file)
@@ -496,7 +502,7 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
                 )
                 if transmission_mode == "value":
                     with open(
-                        Path(working_dir) / 
+                        working_path / 
                         f"{self.base_output_filename}_EC2.tif", "rb"
                     ) as output_file:
                         contenuto_bytes = output_file.read()
@@ -505,10 +511,12 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
                     )
                     produced_outputs['invasion_map']['encoding'] = 'base64'
                 elif (transmission_mode == "reference"):
-                    src_file = Path(working_dir) / (
+                    src_file = (
+                        working_path /
                         f"{self.base_output_filename}_EC2.tif"
                     )
-                    dst_file = Path(self.base_reference_dir) / (
+                    dst_file = (
+                        self.base_reference_path /
                         f"{self.job_id}_invasion_map.tif"
                     )
                     shutil.copy(src_file, dst_file)
@@ -533,8 +541,7 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
                 y_eps_n = [] # variable number of columns (eps_0, eps_1, ...)
 
                 with open(
-                    Path(working_dir) / 
-                    f"{self.base_output_filename}.csv"
+                    working_path / f"{self.base_output_filename}.csv"
                 ) as output_file:
                     for line in output_file:
                         # Skip spaces
@@ -663,7 +670,7 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
                 if transmission_mode == "value":
                     produced_outputs['spatial_evolution']['value'] =  value
                 elif (transmission_mode == "reference"):
-                    dst_file = Path(self.base_reference_dir) / (
+                    dst_file = Path(self.base_reference_path) / (
                         f"{self.job_id}_spatial_evolution.json"
                     )
 
@@ -685,8 +692,7 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
                 y_thikness_n = [] 
     
                 with open(
-                    Path(working_dir) / 
-                    f"{self.base_output_filename}_thickness.csv"
+                    working_path / f"{self.base_output_filename}_thickness.csv"
                 ) as output_file:
                     for line in output_file:
                         # Skip spaces
@@ -766,7 +772,7 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
                 if transmission_mode == "value":
                     produced_outputs['deposit_thickness']['value'] =  value
                 elif (transmission_mode == "reference"):
-                    dst_file = Path(self.base_reference_dir) / (
+                    dst_file = Path(self.base_reference_path) / (
                         f"{self.job_id}_deposit_thickness.json"
                     )
 
@@ -790,7 +796,7 @@ class PyboxProcessor(BaseRemoteExecutionProcessor):
 
         return self.format_output(produced_outputs, outputs)
 
-    def prepare_input(self, data, working_dir, outputs):
+    def prepare_input(self, data, working_dir: Path, outputs):
         # Verify input parameters matching definitions.
         LOGGER.debug(f'Validating input')
         # NOTE: input attributes are all simple values or array,
