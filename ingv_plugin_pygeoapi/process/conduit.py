@@ -600,7 +600,7 @@ PROCESS_METADATA = {
     {
       'curl_example': (
         "curl -k -L -X POST "
-        "\"https://epos_geoinquire.pi.ingv.it/geoinquire/processes/conduit/execution\" "
+        "\"https://voice.pi.ingv.it/geoinquire/processes/conduit/execution\" "
         "-H \"Content-Type: application/json\" "
         "-d '{\"inputs\":"
               "{\"components\":"
@@ -621,7 +621,7 @@ PROCESS_METADATA = {
   ]
   # curl localhost:5000/processes/conduit/execution -H 'Content-Type: application/json' -d '{ "inputs" : { "components" : { "value" : {"fg": 1.0e8, "p": 1.0e8, "t": 1050.0e0, "d": 60.0e0, "l": 4000.0e0, "sio2": 0.7669, "tio2": 0.0012, "al2o3": 0.1322, "fe2o3": 0.0039, "feo": 0.0038, "mno": 0.0007, "mgo": 0.0006, "cao": 0.0080, "na2o": 0.0300, "k2o": 0.0512, "h2o": 0.0500e0, "co2": 0.0200e0, "fe": 0.2, "pd": 0.9, "dp": 200e-6, "ds": 200e-6, "dc": 200e-6, "c": 0.1, "den": 2800.0e0 } } }, "outputs" : { "chart_1" : { "transmissionMode": "value" }, "chart_2" : { "transmissionMode": "value" } } }'
   # curl localhost:5000/processes/conduit/execution -H 'Content-Type: application/json' -H 'Prefer: respond-async' -d '{ "inputs" : { "components" : { "value" : {"fg": 1.0e8, "p": 1.0e8, "t": 1050.0e0, "d": 60.0e0, "l": 4000.0e0, "sio2": 0.7669, "tio2": 0.0012, "al2o3": 0.1322, "fe2o3": 0.0039, "feo": 0.0038, "mno": 0.0007, "mgo": 0.0006, "cao": 0.0080, "na2o": 0.0300, "k2o": 0.0512, "h2o": 0.0500e0, "co2": 0.0200e0, "fe": 0.2, "pd": 0.9, "dp": 200e-6, "ds": 200e-6, "dc": 200e-6, "c": 0.1, "den": 2800.0e0 } } }, "outputs" : { "chart_1" : { "transmissionMode": "value" }, "chart_2" : { "transmissionMode": "value" } } }'
-  # curl -k -L -X POST "https://epos_geoinquire.pi.ingv.it/geoinquire/processes/conduit/execution" -H "Content-Type: application/json" -d '{ "inputs" : { "components" : { "value" : {"fg": 1.0e8, "p": 1.0e8, "t": 1050.0e0, "d": 60.0e0, "l": 4000.0e0, "sio2": 0.7669, "tio2": 0.0012, "al2o3": 0.1322, "fe2o3": 0.0039, "feo": 0.0038, "mno": 0.0007, "mgo": 0.0006, "cao": 0.0080, "na2o": 0.0300, "k2o": 0.0512, "h2o": 0.0500e0, "co2": 0.0200e0, "fe": 0.2, "pd": 0.9, "dp": 200e-6, "ds": 200e-6, "dc": 200e-6, "c": 0.1, "den": 2800.0e0 } } }, "outputs" : { "chart_1" : { "transmissionMode": "value" }, "chart_2" : { "transmissionMode": "value" } } }'
+  # curl -k -L -X POST "https://voice.pi.ingv.it/geoinquire/processes/conduit/execution" -H "Content-Type: application/json" -d '{ "inputs" : { "components" : { "value" : {"fg": 1.0e8, "p": 1.0e8, "t": 1050.0e0, "d": 60.0e0, "l": 4000.0e0, "sio2": 0.7669, "tio2": 0.0012, "al2o3": 0.1322, "fe2o3": 0.0039, "feo": 0.0038, "mno": 0.0007, "mgo": 0.0006, "cao": 0.0080, "na2o": 0.0300, "k2o": 0.0512, "h2o": 0.0500e0, "co2": 0.0200e0, "fe": 0.2, "pd": 0.9, "dp": 200e-6, "ds": 200e-6, "dc": 200e-6, "c": 0.1, "den": 2800.0e0 } } }, "outputs" : { "chart_1" : { "transmissionMode": "value" }, "chart_2" : { "transmissionMode": "value" } } }'
   #
 }
 

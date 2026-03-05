@@ -431,7 +431,7 @@ PROCESS_METADATA = {
     {
         'curl_example': (
             "curl -k -L -X POST "
-            "\"https://epos_geoinquire.pi.ingv.it/geoinquire/processes/solwcad/execution\" "
+            "\"https://voice.pi.ingv.it/geoinquire/processes/solwcad/execution\" "
             "-H \"Content-Type: application/json\" "
             "-d '{ \"inputs\":{\"swinput.data\":{\"value\":{"
             "\"ndat1\":1,\"ndat2\":2,\"kl\":0}},"
@@ -457,7 +457,7 @@ PROCESS_METADATA = {
     #         ".7053" , ".0032" , ".1301" , ".0027" , ".0146" , ".0006" ,
     #         ".0118" , ".0232" , ".0378" , ".0306" ] ] } }
     #
-    # curl -k -L -X POST "https://epos_geoinquire.pi.ingv.it/geoinquire/processes/solwcad/execution" -H "Content-Type: application/json" -d '{ "inputs" : {  "swinput.data" : { "value" : { "ndat1" : 1 , "ndat2" : 2 , "kl" : 0 } }, "sw.data" : [ [ "1.00d8" , "1273." , ".0400" , ".0200" , ".7653" , ".0032" , ".1201" , ".0027" , ".0246" , ".0006" , ".0018" , ".0132" , ".0378" , ".0306" ], [ "2.00d8" , "1173." , ".0200" , ".0010" , ".7053" , ".0032" , ".1301" , ".0027" , ".0146" , ".0006" , ".0118" , ".0232" , ".0378" , ".0306" ] ] } }'
+    # curl -k -L -X POST "https://voice.pi.ingv.it/geoinquire/processes/solwcad/execution" -H "Content-Type: application/json" -d '{ "inputs" : {  "swinput.data" : { "value" : { "ndat1" : 1 , "ndat2" : 2 , "kl" : 0 } }, "sw.data" : [ [ "1.00d8" , "1273." , ".0400" , ".0200" , ".7653" , ".0032" , ".1201" , ".0027" , ".0246" , ".0006" , ".0018" , ".0132" , ".0378" , ".0306" ], [ "2.00d8" , "1173." , ".0200" , ".0010" , ".7053" , ".0032" , ".1301" , ".0027" , ".0146" , ".0006" , ".0118" , ".0232" , ".0378" , ".0306" ] ] } }'
     #
 }
 
