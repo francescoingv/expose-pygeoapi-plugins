@@ -1,6 +1,8 @@
 
 # INGV pygeoapi process plugins
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18892819.svg)](https://doi.org/10.5281/zenodo.18892819)
+
 Plugins for extending **pygeoapi** with processing services developed at **INGV**.
 
 This repository contains a collection of plugins that allow exposing processing services through **pygeoapi**, compliant with the **OGC API - Processes** standard.
@@ -274,11 +276,15 @@ During deployment these placeholders must be replaced with the actual environmen
 ---
 ## Related software
 
-This repository is part of a multi-component solution.
+This repository is part of the **INGV pygeoapi processing platform**:
 
-The execution service for the application codes is implemented in the repository:
+https://github.com/francescoingv/ingv-pygeoapi-processing-platform  
+Platform DOI: https://doi.org/10.5281/zenodo.18892848
 
-https://github.com/francescoingv/generic-processor-provider
+The execution service for application codes is implemented in the repository:
+
+https://github.com/francescoingv/generic-processor-provider  
+DOI: https://doi.org/10.5281/zenodo.18892842
 
 This service receives HTTP requests from the pygeoapi plugins and executes
 the configured application codes.
@@ -288,9 +294,9 @@ the configured application codes.
 
 If you use this software in scientific work, please cite it as:
 
-Martinelli, F. (2026). INGV pygeoapi process plugins.
-
-The DOI will be added after Zenodo publication.
+Martinelli, F. (2026).  
+*INGV pygeoapi process plugins*.  
+DOI: https://doi.org/10.5281/zenodo.18892819
 
 ## License
 

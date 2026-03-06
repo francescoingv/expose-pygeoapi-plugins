@@ -7,6 +7,18 @@
       "affiliation": "Istituto Nazionale di Geofisica e Vulcanologia (INGV)"
     }
   ],
+  "related_identifiers": [
+    {
+      "relation": "isPartOf",
+      "identifier": "10.5281/zenodo.18892848",
+      "scheme": "doi"
+    },
+    {
+      "relation": "isSupplementTo",
+      "identifier": "10.5281/zenodo.18892842",
+      "scheme": "doi"
+    }
+  ],
   "upload_type": "software",
   "license": "MIT"
 }

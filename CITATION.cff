@@ -12,6 +12,15 @@ repository-code: https://github.com/francescoingv/ingv-pygeoapi-process-plugins
 license: MIT
 version: 1.0.0
 date-released: 2026-03-06
+doi: 10.5281/zenodo.18892819
 
-# After Zenodo to add:
-# doi: 10.xxxx/zenodo.xxxxxx
+references:
+  - type: software
+    title: INGV pygeoapi processing platform
+    repository-code: https://github.com/francescoingv/ingv-pygeoapi-processing-platform
+    doi: 10.5281/zenodo.18892848
+  - type: software
+    title: Generic processor provider for external execution services used by INGV pygeoapi process plugins
+    repository-code: https://github.com/francescoingv/generic-processor-provider
+    doi: 10.5281/zenodo.18892842
+
