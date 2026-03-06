@@ -190,14 +190,20 @@ PROCESS_METADATA = {
   #   items: {type: string, enum: ['value', 'reference'], default: 'value'}
 
   'links': [{
-    # Required:
-    'href': 'https://example.org/process',
-    # optional:
-    'rel': 'about',
+    'href': 'https://civ.pi.ingv.it/project/pybox-2/'
+    },
+    {
+    'href': 'https://doi.org/10.5281/zenodo.2616551',
+    'rel': 'service-doc',
+    'type': 'application/pdf',
+    'hreflang': 'en-US'
+    },
+    {
+    'href': 'http://dx.doi.org/10.1016/j.jvolgeores.2016.08.002',
+    'rel': 'describedby',
     'type': 'text/html',
-    'hreflang': 'en-US',
-    'title': 'information'
-    }],
+    'hreflang': 'en-US'
+  }],
   # type: array, 
   #   items: {type: object, required: 'href', properties:
   #       href: type: string, rel: type: string,
