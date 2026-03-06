@@ -2,13 +2,13 @@
 
 Plugin per estendere **pygeoapi** con processi di elaborazione sviluppati da **INGV**.
 
-Questo repository contiene una collezione di plugin che implementano processi compatibili con lo standard **OGC API - Processes** e permettono di esporre servizi di elaborazione tramite **pygeoapi**.
+Questo repository contiene una collezione di plugin che permettono di esporre servizi di elaborazione tramite **pygeoapi**, compatibili con lo standard **OGC API - Processes**.
 
 ---
 ## Overview
 
 [pygeoapi](https://pygeoapi.io/) è un framework server Python che implementa diversi standard **OGC API**.
-In particolare implementa lo standard per offrire il servizio di elaborazione di secondo lo standard OGC API - Processes (https://ogcapi.ogc.org/processes/).
+In particolare supporta lo standard [OGC API - Processes](https://ogcapi.ogc.org/processes/) per offrire il servizio di elaborazione di secondo lo API standard.
 
 Attraverso i plugin presenti in questo repository è possibile integrare nuovi processi di elaborazione all'interno di un'istanza pygeoapi.
 
@@ -82,13 +82,15 @@ Ciascun plugin derivato da BaseRemoteExecutionProcessor è specifico per un codi
 - valida i parametri di input
 - restituisce il risultato nel formato previsto da pygeoapi
 
-### Sottomettere la richiesta a un servizio esterno
+## Servizio di elaborazione esterno
 
 È stata fatta la scelta di **non eseguire l’elaborazione del codice sullo stesso server** su cui è in esecuzione pygeoapi, per permettere la completa indipendenza tra l’ambiente di esecuzione di plugin differenti, in particolare per quanto riguarda le librerie utilizzate da ciascun codice.
 
 Ciascun plugin richiede un servizio di elaborazione su un URL specifico; si ipotizza quindi un server dedicato per ciascun codice.
 
 ### Gestione delle directory e dei job
+
+Ogni richiesta di elaborazione viene gestita come un job identificato da un UUID.
 
 A ciascun plugin è associata una directory (riferita nella configurazione del plugin tramite `private_processor_dir`), al di sotto della quale viene creata una directory specifica per ciascun job, identificata dal nome univoco del job (UUID - Universal Unique ID).
 
@@ -198,6 +200,7 @@ Ricavati principalmente da code_input_params nella richiesta POST, possono talvo
 ---
 ## Uso con Docker
 
+
 Il plugin si presta ad essere installato come container Docker.
 
 In tal caso è necessario creare la seguente struttura:
@@ -219,6 +222,7 @@ In tal caso è necessario creare la seguente struttura:
             └── ...
 ```
 
+Il repository include una configurazione Docker che permette di eseguire il servizio di elaborazione in un ambiente containerizzato.
 
 ---
 ## Variabili d’ambiente
