@@ -1,66 +1,110 @@
-# ingv_plugin_pygeoapi
+# INGV pygeoapi process plugins
 
-Plugin INGV per pygeoapi.
+Plugin per estendere **pygeoapi** con processi di elaborazione sviluppati da **INGV**.
 
-Questo pacchetto permette di estendere il framework **pygeoapi**
-(Ref. https://pygeoapi.io/) con funzionalità specifiche INGV.
-
-In particolare vengono forniti plugins per offrire il servizio di elaborazione di codici
-secondo lo standard OGC API - Processes (Ref. https://ogcapi.ogc.org/processes/).
+Questo repository contiene una collezione di plugin che implementano processi compatibili con lo standard **OGC API - Processes** e permettono di esporre servizi di elaborazione tramite **pygeoapi**.
 
 ---
+## Overview
 
-## Logica
+[pygeoapi](https://pygeoapi.io/) è un framework server Python che implementa diversi standard **OGC API**.
+In particolare implementa lo standard per offrire il servizio di elaborazione di secondo lo standard OGC API - Processes (https://ogcapi.ogc.org/processes/).
 
-Ciascun plugin gestisce le richieste per uno specifico codice con la seguente logica:
+Attraverso i plugin presenti in questo repository è possibile integrare nuovi processi di elaborazione all'interno di un'istanza pygeoapi.
 
-- definisce i metadati per l’utilizzo del servizio
-- verifica che i parametri delle richieste di elaborazione siano consistenti con i metadati
-- **[sottomette la richiesta a un servizio di elaborazione](#sottomettere-la-richiesta-a-un-servizio)**
-- elabora la risposta in funzione dei metadati e delle richieste di elaborazione
-- restituisce i risultati
+I plugin permettono di esporre servizi sviluppati da INGV tramite interfacce API standard, rendendo i processi accessibili tramite richieste HTTP.
 
 ---
+## Requirements
 
-## Sottomettere la richiesta a un servizio
+Per utilizzare i plugin è necessario avere installato:
 
-È stata fatta la scelta di **non eseguire l’elaborazione del codice sullo stesso server**
-su cui è in esecuzione pygeoapi, per permettere la completa indipendenza tra
-l’ambiente di esecuzione di plugin differenti, in particolare per quanto riguarda
-le librerie utilizzate da ciascun codice.
+- Python >= 3.x
+- pygeoapi
 
-Ciascun plugin richiede un servizio di elaborazione su un URL specifico;
-si ipotizza quindi un server dedicato per ciascun codice.
+È consigliato utilizzare un ambiente virtuale Python.
 
----
-
-## Gestione delle directory e dei job
-
-A ciascun plugin è associata una directory (riferita nella configurazione del plugin
-tramite `private_processor_dir`), al di sotto della quale viene creata una directory
-specifica per ciascun job, identificata dal nome univoco del job (UUID - Universal Unique ID).
-
-Il plugin può leggere e scrivere file nella directory specifica del job che sta
-elaborando.
-
-Nel caso in cui il servizio di elaborazione richiesto dal plugin utilizzi
-file di input o restituisca file di output:
-- se il servizio ha accesso alla directory del plugin associata al servizio
-  (ovvero la cartella è condivisa tra il servizio ed il plugin),
-  ed in particolare alla sottodirectory relativa al job specifico,
-  plugin e servizio possono utilizzare tale directory per lo scambio di file;
-- se il servizio non ha accesso a tale directory, il contenuto dei
-  file deve essere trasferito nel body/response delle
-  "richieste di esecuzione"/"richieste dei risultati".
-
-La modalità di scambio di informazioni tra plugin e servizio specifico è gestita
-in maniera dedicata all’interno del plugin.
+L’installazione di pygeoapi include tutte le librerie necessarie al runtime
+(con riferimento ai file `requirements*.txt` del framework).
 
 ---
+## Installation
 
-## Interfaccia del servizio di elaborazione
+Clonare il repository:
 
-Il servizio specifico deve rispondere alla seguente richiesta:
+git clone https://github.com/francescoingv/ingv-pygeoapi-process-plugins.git
+
+Entrare nella directory del progetto:
+
+cd ingv-pygeoapi-process-plugins
+
+Installare il pacchetto:
+
+pip install .
+
+In alternativa, per sviluppo:
+
+pip install -e .
+
+---
+## Usage
+
+Per utilizzare i plugin è necessario registrarli nella configurazione di **pygeoapi**.
+
+Un esempio di configurazione è disponibile nel file:
+
+example-config.yml
+
+Nel file di configurazione di pygeoapi è possibile aggiungere un processo definendo il plugin Python corrispondente.
+
+Esempio semplificato:
+
+processes:
+  example-process:
+    type: process
+    processor:
+      name: ingv_plugin_pygeoapi.process.example_process
+
+Dopo aver configurato il processo,deve essere generato il file di configurazione openapi (es.: pygeoapi openapi generate example-config.yml --output-file example-openapi.yml): pygeoapi esporrà automaticamente l'endpoint API relativo.
+
+---
+## Plugin architecture
+
+### Plugin base: BaseRemoteExecutionProcessor
+
+Il plugin base:
+- riceve e gestisce la richiesta di esecuzione
+- inoltra la richiesta di esecuzione ad un **servizio di elaborazione esterno** a pygeoapi
+
+### Plugin spedifici:
+Ciascun plugin derivato da BaseRemoteExecutionProcessor è specifico per un codice:
+- contiene la definizione dei metadati per l’utilizzo del servizio
+- valida i parametri di input
+- restituisce il risultato nel formato previsto da pygeoapi
+
+### Sottomettere la richiesta a un servizio esterno
+
+È stata fatta la scelta di **non eseguire l’elaborazione del codice sullo stesso server** su cui è in esecuzione pygeoapi, per permettere la completa indipendenza tra l’ambiente di esecuzione di plugin differenti, in particolare per quanto riguarda le librerie utilizzate da ciascun codice.
+
+Ciascun plugin richiede un servizio di elaborazione su un URL specifico; si ipotizza quindi un server dedicato per ciascun codice.
+
+### Gestione delle directory e dei job
+
+A ciascun plugin è associata una directory (riferita nella configurazione del plugin tramite `private_processor_dir`), al di sotto della quale viene creata una directory specifica per ciascun job, identificata dal nome univoco del job (UUID - Universal Unique ID).
+
+Il plugin può leggere e scrivere file nella directory specifica del job che sta elaborando.
+
+Nel caso in cui il **servizio di elaborazione esterno** richiesto dal plugin utilizzi file di input o restituisca file di output:
+- se il servizio ha accesso alla directory del plugin (ovvero la cartella è condivisa tra il servizio ed il plugin), plugin e servizio possono utilizzare tale directory per lo scambio di file;
+- se il servizio non ha accesso a tale directory, il contenuto dei file deve essere trasferito nel body/response.
+
+La modalità di scambio di informazioni tra plugin e servizio specifico è gestita in maniera dedicata all’interno del plugin.
+
+
+---
+## Interfaccia del servizio di elaborazione esterno
+
+Il servizio di elaborazione esterno deve rispondere alla seguente richiesta:
 
 ```text
 POST /execute
@@ -85,7 +129,6 @@ Il body della richiesta deve contenere un **oggetto JSON** con i seguenti campi:
 }
 ```
 
-
 ### Parametri
 
 #### `code_input_params`
@@ -97,8 +140,6 @@ I valori possono essere:
 - numeri
 - booleani
 - liste
-
----
 
 #### `application_params`
 
@@ -152,34 +193,9 @@ Quello che l'esecuzione del codice ha prodotto sullo standard error
 #### `params`
 
 Dizionario con i parametri che vengono passati al codice.
-Ricavati principalmente da code_input_params nella richiesta POST,
-possono talvolta essere differenti: parametri aggiunti o modificati dal servizio.
+Ricavati principalmente da code_input_params nella richiesta POST, possono talvolta essere differenti: parametri aggiunti o modificati dal servizio.
 
 ---
-
-## Installazione
-
-### Framework di riferimento: pygeoapi
-
-Per l’utilizzo del plugin deve essere configurato il progetto **pygeoapi**:
-
-https://github.com/geopython/pygeoapi
-
-Il presente progetto rappresenta un set di **plug-in di pygeoapi**.
-
-L’installazione di pygeoapi include tutte le librerie necessarie al runtime
-(con riferimento ai file `requirements*.txt` del framework).
-
----
-
-### Installazione in modalità sviluppo (editable)
-
-```bash
-python3 -m pip install -e .
-```
-
----
-
 ## Uso con Docker
 
 Il plugin si presta ad essere installato come container Docker.
@@ -203,8 +219,8 @@ In tal caso è necessario creare la seguente struttura:
             └── ...
 ```
 
----
 
+---
 ## Variabili d’ambiente
 
 ### Server pygeoapi
