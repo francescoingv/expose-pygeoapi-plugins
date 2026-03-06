@@ -1,0 +1,12 @@
+{
+  "title": "INGV pygeoapi process plugins",
+  "description": "Plugins for pygeoapi process services developed at INGV.",
+  "creators": [
+    {
+      "name": "Martinelli, Francesco",
+      "affiliation": "Istituto Nazionale di Geofisica e Vulcanologia (INGV)"
+    }
+  ],
+  "upload_type": "software",
+  "license": "MIT"
+}

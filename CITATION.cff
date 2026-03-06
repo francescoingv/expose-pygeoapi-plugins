@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+title: INGV pygeoapi process plugins
+message: "If you use this software, please cite it as below."
+type: software
+
+authors:
+  - family-names: Martinelli
+    given-names: Francesco
+    affiliation: Istituto Nazionale di Geofisica e Vulcanologia (INGV)
+
+repository-code: https://github.com/francescoingv/ingv-pygeoapi-process-plugins
+license: MIT
+version: 1.0.0
+date-released: 2026-03-06
+
+# After Zenodo to add:
+# doi: 10.xxxx/zenodo.xxxxxx

@@ -2,13 +2,13 @@
 
 Plugin per estendere **pygeoapi** con processi di elaborazione sviluppati da **INGV**.
 
-Questo repository contiene una collezione di plugin che permettono di esporre servizi di elaborazione tramite **pygeoapi**, compatibili con lo standard **OGC API - Processes**.
+Questo repository contiene una collezione di plugin che permettono di esporre tramite **pygeoapi** servizi di elaborazione compatibili con lo standard **OGC API - Processes**.
 
 ---
 ## Overview
 
-[pygeoapi](https://pygeoapi.io/) è un framework server Python che implementa diversi standard **OGC API**.
-In particolare supporta lo standard [OGC API - Processes](https://ogcapi.ogc.org/processes/) per offrire il servizio di elaborazione di secondo lo API standard.
+[pygeoapi](https://pygeoapi.io/) è un server framework Python che implementa diversi standard **OGC API**.
+In particolare supporta lo standard [OGC API - Processes](https://ogcapi.ogc.org/processes/) per offrire servizi di elaborazione tramite API standard.
 
 Attraverso i plugin presenti in questo repository è possibile integrare nuovi processi di elaborazione all'interno di un'istanza pygeoapi.
 
@@ -19,7 +19,7 @@ I plugin permettono di esporre servizi sviluppati da INGV tramite interfacce API
 
 Per utilizzare i plugin è necessario avere installato:
 
-- Python >= 3.x
+- Python >= 3.12
 - pygeoapi
 
 È consigliato utilizzare un ambiente virtuale Python.
@@ -58,14 +58,21 @@ example-config.yml
 Nel file di configurazione di pygeoapi è possibile aggiungere un processo definendo il plugin Python corrispondente.
 
 Esempio semplificato:
-
+```yaml
 processes:
   example-process:
     type: process
     processor:
       name: ingv_plugin_pygeoapi.process.example_process
+```
 
-Dopo aver configurato il processo,deve essere generato il file di configurazione openapi (es.: pygeoapi openapi generate example-config.yml --output-file example-openapi.yml): pygeoapi esporrà automaticamente l'endpoint API relativo.
+Dopo aver configurato il processo deve essere generato il file di configurazione OpenAPI, ad esempio:
+
+```
+pygeoapi openapi generate example-config.yml --output-file example-openapi.yml
+```
+
+pygeoapi esporrà automaticamente l'endpoint API relativo.
 
 ---
 ## Plugin architecture
@@ -76,7 +83,7 @@ Il plugin base:
 - riceve e gestisce la richiesta di esecuzione
 - inoltra la richiesta di esecuzione ad un **servizio di elaborazione esterno** a pygeoapi
 
-### Plugin spedifici:
+### Plugin specifici
 Ciascun plugin derivato da BaseRemoteExecutionProcessor è specifico per un codice:
 - contiene la definizione dei metadati per l’utilizzo del servizio
 - valida i parametri di input
@@ -92,7 +99,7 @@ Ciascun plugin richiede un servizio di elaborazione su un URL specifico; si ipot
 
 Ogni richiesta di elaborazione viene gestita come un job identificato da un UUID.
 
-A ciascun plugin è associata una directory (riferita nella configurazione del plugin tramite `private_processor_dir`), al di sotto della quale viene creata una directory specifica per ciascun job, identificata dal nome univoco del job (UUID - Universal Unique ID).
+A ciascun plugin è associata una directory (riferita nella configurazione del plugin tramite `private_processor_dir`), al di sotto della quale viene creata una directory specifica per ciascun job, identificata dal nome univoco del job (UUID - Universally Unique Identifier).
 
 Il plugin può leggere e scrivere file nella directory specifica del job che sta elaborando.
 
@@ -163,6 +170,7 @@ GET /job_info/<string:job_id>
 Restituisce un oggetto JSON con le seguenti informazioni di esempio:
 
 ```json
+{
   "job_id": "123e4567-e89b-12d3-a456-426614174000",
   "job_info": {
     "received": "2026-01-20T10:00:00Z",
@@ -176,6 +184,7 @@ Restituisce un oggetto JSON con le seguenti informazioni di esempio:
     "param1": "valore1",
     "param2": 123
   }
+}
 ```
 
 ### Parametri
@@ -200,8 +209,8 @@ Ricavati principalmente da code_input_params nella richiesta POST, possono talvo
 ---
 ## Uso con Docker
 
-
-Il plugin si presta ad essere installato come container Docker.
+Il plugin può essere utilizzato all'interno di un container Docker
+che esegue pygeoapi.
 
 In tal caso è necessario creare la seguente struttura:
 
@@ -227,6 +236,12 @@ Il repository include una configurazione Docker che permette di eseguire il serv
 ---
 ## Variabili d’ambiente
 
+Le variabili d’ambiente sono indicate nel file di configurazione tramite
+placeholder della forma `$VARIABILE$`.  
+Durante il deployment tali placeholder devono essere sostituiti con i valori
+delle corrispondenti variabili d’ambiente.
+
+
 ### Server pygeoapi
 
 - `$SERVER_NAME_geoinquire$`  
@@ -239,8 +254,8 @@ Il repository include una configurazione Docker che permette di eseguire il serv
 
 ---
 
-### Job Manager di pygeoapi:
-Si fa riferimento a PostgreSQLManager 
+### Job Manager di pygeoapi
+Si fa riferimento a PostgreSQLManager
 
 - `$PYGEOAPI_OUTPUT_DIR$`
   directory utilizzata per scrivere i file dei risultati delle elaborazioni
@@ -251,12 +266,13 @@ Si fa riferimento a PostgreSQLManager
   
 - `$PORT_POSTGRES_SERVER$`
   porta utilizzata da PostgreSQL
-  (es. 5433 , 5432)
+  (es. 5433, 5432)
   
-Nota: attualmente il file di configurazione non prevede come variabili user e password per l'accesso al DB,
-      ma in un progetto non isolato è opportuno aggiungerli.
+Nota: attualmente il file di configurazione non prevede variabili per user e password per l'accesso al DB, ma in un progetto non isolato è opportuno aggiungerle.
+```yaml
 user: ogc_api_user
 password: user
+```
 
 ---
 
@@ -311,7 +327,7 @@ richiedono le seguenti variabili d'ambiente:
   copiato da `my.pygeoapi.config.yml`) a `$<SERVICE_ID>_URL_HREF_RESULTS$`.
   URL di base che rende disponibili i contenuti in `$<SERVICE_ID>_DIR_HREF_RESULTS$`
   (es. `http://process_results/myresults/`)
-  Un servervizio esterno a pygeoapi deve essere presente per rendere
+  Un servizio esterno a pygeoapi deve essere presente per rendere
   disponibili i file.
   Attualmente si pensa di utilizzare un solo server web per tutti i plugin,
   ma è possibile differenziarli.
@@ -320,7 +336,9 @@ richiedono le seguenti variabili d'ambiente:
 ---
 ## Citation
 
-Se utilizzi questo software in un lavoro scientifico, ti preghiamo di citarlo.
+Se utilizzi questo software in un lavoro scientifico, ti preghiamo di citarlo come segue:
+
+Martinelli, F. (2026). INGV pygeoapi process plugins.
 
 Il DOI verrà aggiunto dopo la pubblicazione su Zenodo.
 
@@ -333,5 +351,7 @@ Vedere il file `LICENSE` per maggiori dettagli.
 ## Authors
 
 Francesco Martinelli  
-Istituto Nazionale di Geofisica e Vulcanologia (INGV)
+Istituto Nazionale di Geofisica e Vulcanologia (INGV)  
+Pisa, Italy
+
 

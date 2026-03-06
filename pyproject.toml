@@ -1,3 +1,14 @@
 [build-system]
 requires = ["setuptools>=46.4", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "ingv-pygeoapi-process-plugins"
+version = "1.0.0"
+description = "Plugins for pygeoapi process services developed at INGV"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+  { name = "Francesco Martinelli", affiliation = "Istituto Nazionale di Geofisica e Vulcanologia (INGV)" }
+]
+requires-python = ">=3.12"
