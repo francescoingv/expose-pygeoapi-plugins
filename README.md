@@ -14,6 +14,53 @@ Attraverso i plugin presenti in questo repository è possibile integrare nuovi p
 
 I plugin permettono di esporre servizi sviluppati da INGV tramite interfacce API standard, rendendo i processi accessibili tramite richieste HTTP.
 
+## Architettura della soluzione
+
+La soluzione completa è composta da tre livelli software distinti.
+
+### 1. pygeoapi
+
+Il framework **pygeoapi** espone i processi tramite API conformi allo
+standard **OGC API - Processes**.
+
+### 2. Plugin pygeoapi
+
+Il repository
+
+https://github.com/francescoingv/ingv-pygeoapi-process-plugins
+
+contiene i plugin che implementano i processi pygeoapi.
+I plugin ricevono le richieste di esecuzione e le inoltrano a un
+servizio di elaborazione esterno.
+
+### 3. Servizio di esecuzione
+
+Il repository
+
+https://github.com/francescoingv/generic-processor-provider
+
+implementa il servizio di esecuzione dei codici applicativi.
+Il servizio riceve richieste HTTP dai plugin e invoca i codici
+applicativi configurati tramite riga di comando.
+
+### 4. Codici di elaborazione
+
+I codici scientifici utilizzati per l'elaborazione non fanno parte
+dei repository sopra indicati.
+
+Essi vengono invocati dal servizio di esecuzione tramite il parametro
+`command_line` definito nel file di configurazione `application.ini`.
+
+---
+
+### Schema logico
+
+Client  
+→ pygeoapi  
+→ plugin pygeoapi  
+→ generic processor provider  
+→ codice scientifico
+
 ---
 ## Requirements
 
