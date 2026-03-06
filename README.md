@@ -313,5 +313,21 @@ richiedono le seguenti variabili d'ambiente:
   ma è possibile differenziarli.
   
 
+---
+## Citation
 
+Se utilizzi questo software in un lavoro scientifico, ti preghiamo di citarlo.
+
+Il DOI verrà aggiunto dopo la pubblicazione su Zenodo.
+
+## License
+
+Questo progetto è distribuito sotto licenza **MIT**.
+
+Vedere il file `LICENSE` per maggiori dettagli.
+
+## Authors
+
+Francesco Martinelli  
+Istituto Nazionale di Geofisica e Vulcanologia (INGV)
 
