@@ -1,56 +1,57 @@
+
 # INGV pygeoapi process plugins
 
-Plugin per estendere **pygeoapi** con processi di elaborazione sviluppati da **INGV**.
+Plugins for extending **pygeoapi** with processing services developed at **INGV**.
 
-Questo repository contiene una collezione di plugin che permettono di esporre tramite **pygeoapi** servizi di elaborazione compatibili con lo standard **OGC API - Processes**.
+This repository contains a collection of plugins that allow exposing processing services through **pygeoapi**, compliant with the **OGC API - Processes** standard.
 
 ---
 ## Overview
 
-[pygeoapi](https://pygeoapi.io/) è un server framework Python che implementa diversi standard **OGC API**.
-In particolare supporta lo standard [OGC API - Processes](https://ogcapi.ogc.org/processes/) per offrire servizi di elaborazione tramite API standard.
+[pygeoapi](https://pygeoapi.io/) is a Python server framework that implements several **OGC API** standards.
+In particular, it supports the [OGC API - Processes](https://ogcapi.ogc.org/processes/) standard to expose processing services through standard APIs.
 
-Attraverso i plugin presenti in questo repository è possibile integrare nuovi processi di elaborazione all'interno di un'istanza pygeoapi.
+Through the plugins contained in this repository it is possible to integrate new processing workflows within a pygeoapi instance.
 
-I plugin permettono di esporre servizi sviluppati da INGV tramite interfacce API standard, rendendo i processi accessibili tramite richieste HTTP.
+These plugins allow exposing processing services developed at INGV through standard API interfaces, making the processes accessible via HTTP requests.
 
-## Architettura della soluzione
+## Solution architecture
 
-La soluzione completa è composta da tre livelli software distinti.
+The complete solution is composed of three distinct software layers.
 
 ### 1. pygeoapi
 
-Il framework **pygeoapi** espone i processi tramite API conformi allo
-standard **OGC API - Processes**.
+The **pygeoapi** framework exposes processes through APIs compliant with the
+**OGC API - Processes** standard.
 
-### 2. Plugin pygeoapi
+### 2. pygeoapi plugins
 
-Il repository https://github.com/francescoingv/ingv-pygeoapi-process-plugins
-contiene i plugin che implementano i processi pygeoapi.
-I plugin ricevono le richieste di esecuzione e le inoltrano a un
-servizio di elaborazione esterno responsabile dell'esecuzione del codice.
+The repository https://github.com/francescoingv/ingv-pygeoapi-process-plugins
+contains the plugins that implement pygeoapi processes.
+The plugins receive execution requests and forward them to an
+external processing service responsible for executing the code.
 
-### 3. Servizio di esecuzione
+### 3. Execution service
 
-Il repository
+The repository
 
 https://github.com/francescoingv/generic-processor-provider
 
-implementa il servizio di esecuzione dei codici applicativi.
-Il servizio riceve richieste HTTP dai plugin e invoca i codici
-applicativi configurati tramite riga di comando.
+implements the execution service for the application codes.
+The service receives HTTP requests from the plugins and invokes
+the configured scientific codes through command-line execution.
 
-### 4. Codici di elaborazione
+### 4. Processing codes
 
-I codici scientifici utilizzati per l'elaborazione non fanno parte
-dei repository sopra indicati.
+The scientific processing codes used for computation are not part
+of the repositories listed above.
 
-Essi vengono invocati dal servizio di esecuzione tramite il parametro
-`command_line` definito nel file di configurazione `application.ini`.
+They are invoked by the execution service through the `command_line`
+parameter defined in the `application.ini` configuration file.
 
 ---
 
-### Schema logico della soluzione
+### Logical solution schema
 
 ```text
 Client
@@ -65,53 +66,54 @@ pygeoapi plugins
 generic-processor-provider
   │
   ▼
-codice scientifico
+scientific processing code
 ```
 
 ---
 ## Requirements
 
-Per utilizzare i plugin è necessario avere installato:
+To use the plugins the following software must be installed:
 
 - Python >= 3.12
 - pygeoapi
 
-È consigliato utilizzare un ambiente virtuale Python.
+Using a Python virtual environment is recommended.
 
-L’installazione di pygeoapi include tutte le librerie necessarie al runtime
-(con riferimento ai file `requirements*.txt` del framework).
+Installing pygeoapi includes all runtime dependencies
+(see the `requirements*.txt` files of the framework).
 
 ---
 ## Installation
 
-Clonare il repository:
+Clone the repository:
 
 git clone https://github.com/francescoingv/ingv-pygeoapi-process-plugins.git
 
-Entrare nella directory del progetto:
+Enter the project directory:
 
 cd ingv-pygeoapi-process-plugins
 
-Installare il pacchetto:
+Install the package:
 
 pip install .
 
-In alternativa, per sviluppo:
+Alternatively, for development:
 
 pip install -e .
 
 ---
 ## Usage
 
-Per utilizzare i plugin è necessario registrarli nella configurazione di **pygeoapi**.
+To use the plugins they must be registered in the **pygeoapi** configuration.
 
-Un esempio di configurazione è disponibile nel file:
+An example configuration is available in the file:
 
 example-config.yml
 
-Nel file di configurazione di pygeoapi è possibile aggiungere un processo definendo il plugin Python corrispondente.
+Within the pygeoapi configuration file a process can be added by defining the corresponding Python plugin.
 
-Esempio semplificato:
+Simplified example:
+
 ```yaml
 processes:
   example-process:
@@ -120,70 +122,73 @@ processes:
       name: ingv_plugin_pygeoapi.process.example_process
 ```
 
-Dopo aver configurato il processo deve essere generato il file di configurazione OpenAPI, ad esempio:
+After configuring the process the OpenAPI configuration file must be generated, for example:
 
 ```
 pygeoapi openapi generate example-config.yml --output-file example-openapi.yml
 ```
 
-pygeoapi esporrà automaticamente l'endpoint API relativo.
+pygeoapi will automatically expose the corresponding API endpoint.
 
 ---
 ## Plugin architecture
 
-### Plugin base: BaseRemoteExecutionProcessor
+### Base plugin: BaseRemoteExecutionProcessor
 
-Il plugin base:
-- riceve e gestisce la richiesta di esecuzione
-- inoltra la richiesta di esecuzione ad un **servizio di elaborazione esterno** a pygeoapi
+The base plugin:
 
-### Plugin specifici
-Ciascun plugin derivato da BaseRemoteExecutionProcessor è specifico per un codice:
-- contiene la definizione dei metadati per l’utilizzo del servizio
-- valida i parametri di input
-- restituisce il risultato nel formato previsto da pygeoapi
+- receives and manages the execution request
+- forwards the execution request to an **external processing service** used by pygeoapi
 
-## Servizio di elaborazione esterno
+### Specific plugins
 
-È stata fatta la scelta di **non eseguire l’elaborazione del codice sullo stesso server** su cui è in esecuzione pygeoapi, per permettere la completa indipendenza tra l’ambiente di esecuzione di plugin differenti, in particolare per quanto riguarda le librerie utilizzate da ciascun codice.
+Each plugin derived from `BaseRemoteExecutionProcessor` is specific for a given code:
 
-Ciascun plugin richiede un servizio di elaborazione su un URL specifico; si ipotizza quindi un server dedicato per ciascun codice.
+- contains metadata describing how the service should be used
+- validates input parameters
+- returns the result in the format expected by pygeoapi
 
-### Gestione delle directory e dei job
+## External processing service
 
-Ogni richiesta di elaborazione viene gestita come un job identificato da un UUID.
+A design choice was made **not to execute processing code on the same server** running pygeoapi, allowing full independence between the execution environments of different plugins, particularly regarding the libraries required by each code.
 
-A ciascun plugin è associata una directory (riferita nella configurazione del plugin tramite `private_processor_dir`), al di sotto della quale viene creata una directory specifica per ciascun job, identificata dal nome univoco del job (UUID - Universally Unique Identifier).
+Each plugin calls a processing service hosted at a specific URL; therefore, a dedicated server is assumed for each processing code.
 
-Il plugin può leggere e scrivere file nella directory specifica del job che sta elaborando.
+### Directory and job management
 
-Nel caso in cui il **servizio di elaborazione esterno** richiesto dal plugin utilizzi file di input o restituisca file di output:
-- se il servizio ha accesso alla directory del plugin (ovvero la cartella è condivisa tra il servizio ed il plugin), plugin e servizio possono utilizzare tale directory per lo scambio di file;
-- se il servizio non ha accesso a tale directory, il contenuto dei file deve essere trasferito nel body/response.
+Each processing request is managed as a job identified by a UUID.
 
-La modalità di scambio di informazioni tra plugin e servizio specifico è gestita in maniera dedicata all’interno del plugin.
+Each plugin is associated with a directory (defined in the plugin configuration via `private_processor_dir`), under which a specific directory is created for each job, identified by the unique job identifier (UUID - Universally Unique Identifier).
 
+The plugin can read and write files within the job directory while processing.
+
+If the **external processing service** uses input files or returns output files:
+
+- if the service has access to the plugin directory (shared directory), plugin and service can exchange files through it;
+- otherwise, file contents must be transferred through the request/response body.
+
+The exchange of information between the plugin and the service is implemented specifically within each plugin.
 
 ---
-## Interfaccia del servizio di elaborazione esterno
+## External processing service interface
 
-Il servizio di elaborazione esterno deve rispondere alla seguente richiesta:
+The external processing service must respond to the following request:
 
 ```text
 POST /execute
 ```
 
-Il `Content-Type` della richiesta può essere:
+The request `Content-Type` can be:
 
 - `text/plain`
 - `application/json`
 
-Il body della richiesta deve contenere un **oggetto JSON** con i seguenti campi:
+The request body must contain a **JSON object** with the following fields:
 
 ```json
 {
   "code_input_params": {
-    "chiave_parametro": "valore_parametro"
+    "parameter_key": "parameter_value"
   },
   "application_params": {
     "job_id": "UUID",
@@ -192,28 +197,29 @@ Il body della richiesta deve contenere un **oggetto JSON** con i seguenti campi:
 }
 ```
 
-### Parametri
+### Parameters
 
 #### `code_input_params`
 
-Dizionario contenente coppie `<chiave_parametro : valore_parametro>`.
+Dictionary containing `<parameter_key : parameter_value>` pairs.
 
-I valori possono essere:
-- stringhe
-- numeri
-- booleani
-- liste
+Values can be:
+
+- strings
+- numbers
+- booleans
+- lists
 
 #### `application_params`
 
-Dizionario con le seguenti chiavi:
+Dictionary with the following keys:
 
-- `job_id`  
-  Identificativo del job (UUID)
+- `job_id`
+  Job identifier (UUID)
 
-- `synch_execution`  
-  Opzionale, booleano, default `true`; indica se la richiesta deve essere
-  eseguita in modalità sincrona
+- `synch_execution`
+  Optional, boolean, default `true`; indicates whether the request must
+  be executed synchronously
 
 ---
 
@@ -221,52 +227,14 @@ Dizionario con le seguenti chiavi:
 GET /job_info/<string:job_id>
 ```
 
-Restituisce un oggetto JSON con le seguenti informazioni di esempio:
-
-```json
-{
-  "job_id": "123e4567-e89b-12d3-a456-426614174000",
-  "job_info": {
-    "received": "2026-01-20T10:00:00Z",
-    "start_processing": "2026-01-20T10:01:00Z",
-    "end_processing": "2026-01-20T10:02:00Z",
-    "exit_code": 0,
-    "std_out": "Output standard del processo",
-    "std_err": ""
-  },
-  "params": {
-    "param1": "valore1",
-    "param2": 123
-  }
-}
-```
-
-### Parametri
-
-#### `exit_code`
-
-Codice di uscita dell'esecuzione (0 se è terminata senza errori)
-
-#### `std_out`
-
-Quello che l'esecuzione del codice ha prodotto sullo standard output
-
-#### `std_err`
-
-Quello che l'esecuzione del codice ha prodotto sullo standard error
-
-#### `params`
-
-Dizionario con i parametri che vengono passati al codice.
-Ricavati principalmente da code_input_params nella richiesta POST, possono talvolta essere differenti: parametri aggiunti o modificati dal servizio.
+Returns a JSON object containing job execution information.
 
 ---
-## Uso con Docker
+## Docker usage
 
-Il plugin può essere utilizzato all'interno di un container Docker
-che esegue pygeoapi.
+The plugin can be used inside a Docker container running pygeoapi.
 
-In tal caso è necessario creare la seguente struttura:
+In that case the following structure must be created:
 
 ```text
 ./
@@ -285,138 +253,44 @@ In tal caso è necessario creare la seguente struttura:
             └── ...
 ```
 
-Il repository include una configurazione Docker che permette di eseguire il servizio di elaborazione in un ambiente containerizzato.
+The repository includes a Docker configuration that allows running the processing service in a container environment.
 
 ---
-## Variabili d’ambiente
+## Environment variables
 
-Le variabili d’ambiente sono indicate nel file di configurazione tramite
-placeholder della forma `$VARIABILE$`.  
-Durante il deployment tali placeholder devono essere sostituiti con i valori
-delle corrispondenti variabili d’ambiente.
+Environment variables are referenced in the configuration file using placeholders of the form `$VARIABLE$`.
 
-
-### Server pygeoapi
-
-- `$SERVER_NAME_geoinquire$`  
-  Nome del server su cui è fornito il framework pygeoapi  
-  (es. `localhost:5000`, `epos_geoinquire.pi.ingv.it`)
-
-- `$LOCATION_epos_pygeoapi$`  
-  Nome della location a cui è fornito il framework pygeoapi  
-  (es. stringa vuota oppure `epos_pygeoapi`)
+During deployment these placeholders must be replaced with the actual environment variable values.
 
 ---
-
-### Job Manager di pygeoapi
-Si fa riferimento a PostgreSQLManager
-
-- `$PYGEOAPI_OUTPUT_DIR$`
-  directory utilizzata per scrivere i file dei risultati delle elaborazioni
-  
-- `$IP_ADDRESS_POSTGRES_SERVER$`
-  host che fornisce PostgreSQL
-  (es. 127.0.0.1)
-  
-- `$PORT_POSTGRES_SERVER$`
-  porta utilizzata da PostgreSQL
-  (es. 5433, 5432)
-  
-Nota: attualmente il file di configurazione non prevede variabili per user e password per l'accesso al DB, ma in un progetto non isolato è opportuno aggiungerle.
-```yaml
-user: ogc_api_user
-password: user
-```
-
----
-
-### Variabili specifiche dei plugin
-
-Nella configurazione proposta si ipotizza che ciascun plugin abbia una directory
-dedicata al di sotto di una directory comune che contiene le directory di tutti
-i plugin.
-
-- `$PYGEOAPI_BASE_PRIVATE_DIRECTORY$`  
-  Directory padre di tutte le directory private dei plugin  
-  (es. `/custom_process_dir`)
-
-- `$<SERVICE_ID>_SERVICE_ID$`  
-  Directory specifica del servizio offerto dal plugin  
-  (es. `solwcad`)
-
-- `$<SERVICE_ID>_URL_BASE$`  
-  URL del servizio specifico  
-  (es. `http://127.0.0.1:5001`)
-
-Le singole richieste di elaborazione possono richiedere ai plugin,
-se i metadati del plugin lo prevedono (attributo `outputTransmission`
-che può avere uno o entrambi i valori `value`, `reference`),
-che ciascuno dei risultati richiesti come **output** venga restituito come:
-- valore ("transmissionMode": "value")
-- reference ("transmissionMode": "reference")
-Nel caso di "reference", l'output contiene l'URL a cui
-accedere per avere il valore.
-
-I plugin derivati dalla classe `BaseRemoteExecutionProcessorLocalReference`
-implementano la logica che i file da restituire alla richiesta di URL
-vengono scritti dal plugin in una directory a cui si può accedere tramite URL.
-Il server che fornisce l'accesso all'URL è esterno all'infrastruttura pygeoapi,
-ma deve avere accesso alla directory in cui viene scritto il file.
-Tali plugin, se abilitati a fornire risultati come `reference`
-richiedono le seguenti variabili d'ambiente:
-
-- `$LOCAL_DIR_HREF_RESULTS$`  
-  Viene sostituita nel file di configurazione (`local.config.yml`,
-  copiato da `my.pygeoapi.config.yml`) a `$<SERVICE_ID>_DIR_HREF_RESULTS$`.
-  Directory in cui il plugin scrive i file che vengono acceduti tramite URL
-  (es. `/custom_process_url/`)
-  Può essere la stessa per tutti i plugin, purchè non ci siano duplicati nei nomi.
-  I plugin sviluppati contengono il **job_id** come prefisso del nome, dove il
-  job_id è un UUID, quindi si assume non ci possano essere duplicati.
-  Attualmente si pensa di utilizzare una sola directory per tutti i plugin,
-  ma è possibile differenziarle.
-
-- `$LOCAL_URL_HREF_RESULTS$`  
-  Viene sostituita nel file di configurazione (`local.config.yml`,
-  copiato da `my.pygeoapi.config.yml`) a `$<SERVICE_ID>_URL_HREF_RESULTS$`.
-  URL di base che rende disponibili i contenuti in `$<SERVICE_ID>_DIR_HREF_RESULTS$`
-  (es. `http://process_results/myresults/`)
-  Un servizio esterno a pygeoapi deve essere presente per rendere
-  disponibili i file.
-  Attualmente si pensa di utilizzare un solo server web per tutti i plugin,
-  ma è possibile differenziarli.
-  
-
 ## Related software
 
-Questo repository fa parte di una soluzione composta da più componenti.
+This repository is part of a multi-component solution.
 
-Il servizio di esecuzione dei codici applicativi è implementato nel repository:
+The execution service for the application codes is implemented in the repository:
 
 https://github.com/francescoingv/generic-processor-provider
 
-Questo servizio riceve richieste HTTP dai plugin pygeoapi ed esegue
-i codici applicativi configurati tramite riga di comando.
+This service receives HTTP requests from the pygeoapi plugins and executes
+the configured application codes.
 
 ---
 ## Citation
 
-Se utilizzi questo software in un lavoro scientifico, ti preghiamo di citarlo come segue:
+If you use this software in scientific work, please cite it as:
 
 Martinelli, F. (2026). INGV pygeoapi process plugins.
 
-Il DOI verrà aggiunto dopo la pubblicazione su Zenodo.
+The DOI will be added after Zenodo publication.
 
 ## License
 
-Questo progetto è distribuito sotto licenza **MIT**.
+This project is distributed under the **MIT License**.
 
-Vedere il file `LICENSE` per maggiori dettagli.
+See the `LICENSE` file for details.
 
 ## Authors
 
 Francesco Martinelli  
 Istituto Nazionale di Geofisica e Vulcanologia (INGV)  
 Pisa, Italy
-
-
