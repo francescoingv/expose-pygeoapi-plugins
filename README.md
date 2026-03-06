@@ -49,6 +49,15 @@ of the repositories listed above.
 They are invoked by the execution service through the `command_line`
 parameter defined in the `application.ini` configuration file.
 
+Current deployments of the platform expose processes associated
+with the following codes:
+
+- **solwcad**
+- **conduit**
+- **pybox**
+
+These codes are executed through the external execution service.
+
 ---
 
 ### Logical solution schema
