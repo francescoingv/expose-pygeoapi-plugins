@@ -25,13 +25,10 @@ standard **OGC API - Processes**.
 
 ### 2. Plugin pygeoapi
 
-Il repository
-
-https://github.com/francescoingv/ingv-pygeoapi-process-plugins
-
+Il repository https://github.com/francescoingv/ingv-pygeoapi-process-plugins
 contiene i plugin che implementano i processi pygeoapi.
 I plugin ricevono le richieste di esecuzione e le inoltrano a un
-servizio di elaborazione esterno.
+servizio di elaborazione esterno responsabile dell'esecuzione del codice.
 
 ### 3. Servizio di esecuzione
 
@@ -53,13 +50,23 @@ Essi vengono invocati dal servizio di esecuzione tramite il parametro
 
 ---
 
-### Schema logico
+### Schema logico della soluzione
 
-Client  
-→ pygeoapi  
-→ plugin pygeoapi  
-→ generic processor provider  
-→ codice scientifico
+```text
+Client
+  │
+  ▼
+pygeoapi
+  │
+  ▼
+pygeoapi plugins
+  │
+  ▼
+generic-processor-provider
+  │
+  ▼
+codice scientifico
+```
 
 ---
 ## Requirements
@@ -379,6 +386,17 @@ richiedono le seguenti variabili d'ambiente:
   Attualmente si pensa di utilizzare un solo server web per tutti i plugin,
   ma è possibile differenziarli.
   
+
+## Related software
+
+Questo repository fa parte di una soluzione composta da più componenti.
+
+Il servizio di esecuzione dei codici applicativi è implementato nel repository:
+
+https://github.com/francescoingv/generic-processor-provider
+
+Questo servizio riceve richieste HTTP dai plugin pygeoapi ed esegue
+i codici applicativi configurati tramite riga di comando.
 
 ---
 ## Citation
