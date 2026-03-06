@@ -193,6 +193,11 @@ PROCESS_METADATA = {
     'href': 'https://civ.pi.ingv.it/project/pybox-2/'
     },
     {
+    'href': 'https://github.com/silviagians/PyBOX-Web',
+    'rel': 'about',
+    'title': 'GitHub repository'
+    },
+    {
     'href': 'https://doi.org/10.5281/zenodo.2616551',
     'rel': 'service-doc',
     'type': 'application/pdf',

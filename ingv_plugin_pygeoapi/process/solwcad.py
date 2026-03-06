@@ -312,13 +312,25 @@ PROCESS_METADATA = {
   #   items: {type: string, enum: ['value', 'reference'], default: 'value'}
 
   'links': [{
-    # Required:
-    'href': 'https://example.org/process',
-    # Optional:
+    'href': 'https://civ.pi.ingv.it/project/solwcad/',
     'rel': 'about',
     'type': 'text/html',
     'hreflang': 'en-US',
-    'title': 'information'
+    'title': 'SOLWCAD | Computational Infrastructure for Volcanology'
+  },
+  {
+    'href': 'https://www.pi.ingv.it/progetti/eurovolc/#solwcad',
+    'rel': 'alternate',
+    'type': 'text/html',
+    'hreflang': 'en-US',
+    'title': 'EUROVOLC: Volcano Dynamics Computational Centre'
+  },
+  {
+    'href': 'https://www.sciencedirect.com/science/article/pii/S0009254106000532?via%3Dihub',
+    'rel': 'describedby',
+    'type': 'text/html',
+    'hreflang': 'en-US',
+    'title': 'The compositional dependence of the saturation surface of H2O + CO2 fluids in silicate melts'
   }],
   # type: array, 
   #   items: {type: object, required: 'href', properties:
