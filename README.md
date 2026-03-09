@@ -328,6 +328,5 @@ Pisa, Italy
 
 ## Acknowledgements
 
-Developed at the **Istituto Nazionale di Geofisica e Vulcanologia
-(INGV)**.
+Developed at the **Istituto Nazionale di Geofisica e Vulcanologia (INGV)**.
 
