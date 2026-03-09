@@ -190,10 +190,12 @@ PROCESS_METADATA = {
   #   items: {type: string, enum: ['value', 'reference'], default: 'value'}
 
   'links': [{
-    'href': 'https://civ.pi.ingv.it/project/pybox-2/'
+    'href': 'https://civ.pi.ingv.it/project/pybox-2/',
+    'type': 'text/html',
     },
     {
     'href': 'https://github.com/silviagians/PyBOX-Web',
+    'type': 'text/html',
     'rel': 'about',
     'title': 'GitHub repository'
     },
