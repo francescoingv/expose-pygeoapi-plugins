@@ -208,7 +208,20 @@ PROCESS_METADATA = {
     'rel': 'describedby',
     'type': 'text/html',
     'hreflang': 'en-US'
-  }],
+    },
+    {
+    "href": "https://doi.org/10.5281/zenodo.18920969",
+    "rel": "cite-as",
+    "type": "text/html",
+    "title": "PyBOX-Web release on Zenodo (DOI: 10.5281/zenodo.18920969)"
+    },
+    {
+    "href": "https://github.com/silviagians/PyBOX-Web",
+    "rel": "source",
+    "type": "text/html",
+    "title": "PyBOX-Web source code repository on GitHub"
+    }
+  ],
   # type: array, 
   #   items: {type: object, required: 'href', properties:
   #       href: type: string, rel: type: string,

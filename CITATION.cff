@@ -9,6 +9,20 @@ authors:
     affiliation: Istituto Nazionale di Geofisica e Vulcanologia (INGV)
 
 repository-code: https://github.com/francescoingv/ingv-pygeoapi-process-plugins
+url: https://github.com/francescoingv/ingv-pygeoapi-process-plugins
+
+abstract: >
+  Pygeoapi plugins implementing scientific processing services
+  exposed through the OGC API - Processes standard within the
+  INGV pygeoapi processing platform.
+
+keywords:
+  - pygeoapi
+  - OGC API - Processes
+  - geospatial processing
+  - scientific workflows
+  - process services
+
 license: MIT
 version: 1.0.0
 date-released: 2026-03-06
@@ -19,8 +33,9 @@ references:
     title: INGV pygeoapi processing platform
     repository-code: https://github.com/francescoingv/ingv-pygeoapi-processing-platform
     doi: 10.5281/zenodo.18892848
+
   - type: software
-    title: Generic processor provider for external execution services used by INGV pygeoapi process plugins
+    title: Generic processor provider
     repository-code: https://github.com/francescoingv/generic-processor-provider
     doi: 10.5281/zenodo.18892842
 

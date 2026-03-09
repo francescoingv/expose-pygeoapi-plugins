@@ -1,5 +1,6 @@
 {
   "title": "INGV pygeoapi process plugins",
+  "upload_type": "software",
   "description": "Plugins for pygeoapi process services developed at INGV.",
   "creators": [
     {
@@ -7,18 +8,35 @@
       "affiliation": "Istituto Nazionale di Geofisica e Vulcanologia (INGV)"
     }
   ],
+  "license": "MIT",
+  "version": "1.0.0",
+  "access_right": "open",
+  "language": "eng",
+  "keywords": [
+    "pygeoapi",
+    "OGC API - Processes",
+    "scientific workflows",
+    "geospatial processing",
+    "process plugins"
+  ],  
   "related_identifiers": [
     {
+      "_comment": "overall platform",
       "relation": "isPartOf",
       "identifier": "10.5281/zenodo.18892848",
       "scheme": "doi"
     },
     {
-      "relation": "isSupplementTo",
+      "_comment": "generic processor provider",
+      "relation": "references",
       "identifier": "10.5281/zenodo.18892842",
       "scheme": "doi"
+    },
+    {
+      "_comment": "pybox: Scientific processing code executed via these plugins",
+      "relation": "references",
+      "identifier": "10.5281/zenodo.18920969",
+      "scheme": "doi"
     }
-  ],
-  "upload_type": "software",
-  "license": "MIT"
+  ]
 }

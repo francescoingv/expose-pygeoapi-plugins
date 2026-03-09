@@ -1,92 +1,122 @@
-
 # INGV pygeoapi process plugins
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18892819.svg)](https://doi.org/10.5281/zenodo.18892819)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Python](https://img.shields.io/badge/python-3.x-blue.svg)
 
-Plugins for extending **pygeoapi** with processing services developed at **INGV**.
-
-This repository contains a collection of plugins that allow exposing processing services through **pygeoapi**, compliant with the **OGC API - Processes** standard.
+Plugins implementing **OGC API - Processes** using **pygeoapi** for the
+INGV pygeoapi processing platform.
+(https://github.com/francescoingv/ingv-pygeoapi-processing-platform)
 
 ---
+
 ## Overview
 
-[pygeoapi](https://pygeoapi.io/) is a Python server framework that implements several **OGC API** standards.
-In particular, it supports the [OGC API - Processes](https://ogcapi.ogc.org/processes/) standard to expose processing services through standard APIs.
+This repository contains **pygeoapi process plugins** used by the
+INGV pygeoapi processing platform to expose scientific processing
+programs through the **OGC API - Processes** standard.
 
-Through the plugins contained in this repository it is possible to integrate new processing workflows within a pygeoapi instance.
+The plugins act as a bridge between:
 
-These plugins allow exposing processing services developed at INGV through standard API interfaces, making the processes accessible via HTTP requests.
+- the **API layer** (pygeoapi)
+- the **execution layer** (remote execution services)
 
-## Solution architecture
+Each plugin represents a scientific processing model and implements
+the logic required to:
 
-The complete solution is composed of three distinct software layers.
+- receive execution requests from pygeoapi
+- validate input/output parameters
+- call a remote execution service
+- collect execution results
+- format and return results according to the **pygeoapi process specification**
 
-### 1. pygeoapi
-
-The **pygeoapi** framework exposes processes through APIs compliant with the
-**OGC API - Processes** standard.
-
-### 2. pygeoapi plugins
-
-The repository https://github.com/francescoingv/ingv-pygeoapi-process-plugins
-contains the plugins that implement pygeoapi processes.
-The plugins receive execution requests and forward them to an
-external processing service responsible for executing the code.
-
-### 3. Execution service
-
-The repository
-
-https://github.com/francescoingv/generic-processor-provider
-
-implements the execution service for the application codes.
-The service receives HTTP requests from the plugins and invokes
-the configured scientific codes through command-line execution.
-
-### 4. Processing codes
-
-The scientific processing codes used for computation are not part
-of the repositories listed above.
-
-They are invoked by the execution service through the `command_line`
-parameter defined in the `application.ini` configuration file.
-
-Current deployments of the platform expose processes associated
-with the following codes:
-
-- **solwcad**
-- **conduit**
-- **pybox**
-
-These codes are executed through the external execution service.
+Actual program execution is delegated to the **generic processor provider**.
 
 ---
 
-### Logical solution schema
+## Design principles
 
-```text
-Client
-  │
-  ▼
-pygeoapi
-  │
-  ▼
-pygeoapi plugins
-  │
-  ▼
-generic-processor-provider
-  │
-  ▼
-scientific processing code
+The plugin architecture follows several principles:
+
+- **API / execution separation**
+- **Remote execution**
+- **Reusable plugin framework**
+- **Minimal coupling**
+
+---
+
+## Architecture diagram
+
+```mermaid
+flowchart TD
+
+Client["Client application"] --> API["pygeoapi (OGC API - Processes)"]
+API --> Plugins["pygeoapi process plugins"]
+Plugins --> Provider["generic-processor-provider"]
+Provider --> Code["Scientific processing code (CLI program)"]
 ```
 
 ---
+
+## Plugin architecture
+
+The repository provides a **base class**:
+
+`BaseRemoteExecutionProcessor`
+
+Responsibilities:
+
+- manage communication with the execution service
+- validate input parameters
+- validate output requests
+- collect execution results
+- format results returned to pygeoapi
+
+Derived classes must implement:
+
+- `prepare_input()`
+- `prepare_output()`
+
+Derived classes must define:
+
+- METADATA describing the service
+
+---
+
+## Platform components
+
+| Component | Repository | DOI | Role |
+|-----------|------------|-----|------|
+| processing platform | [ingv-pygeoapi-processing-platform](https://github.com/francescoingv/ingv-pygeoapi-processing-platform) | https://doi.org/10.5281/zenodo.18892848 | platform architecture |
+| pygeoapi process plugins | [ingv-pygeoapi-process-plugins](https://github.com/francescoingv/ingv-pygeoapi-process-plugins) | https://doi.org/10.5281/zenodo.18892819 | OGC API process implementation |
+| generic processor provider | [generic-processor-provider](https://github.com/francescoingv/generic-processor-provider) | https://doi.org/10.5281/zenodo.18892842 | remote execution service |
+
+---
+
+## Scientific processing codes
+
+Examples of models exposed through the platform:
+
+- **pybox** – scientific processing model to simulate the dispersals
+  of a gravity-driven pyroclastic density current (PDC)
+  
+  Repository: https://github.com/silviagians/PyBOX-Web
+  DOI: https://doi.org/10.5281/zenodo.18920969
+
+- **conduit** – scientific processing model for computing the one-dimensional,
+  steady, isothermal, multiphase and multicomponent flow of magma
+  in volcanic conduits
+
+- **solwcad** – scientific processing model to compute the saturation surface of
+  H₂O–CO₂ fluids in silicate melts of arbitrary composition
+
+---
+
 ## Requirements
 
-To use the plugins the following software must be installed:
-
-- Python >= 3.12
+- Python 3
 - pygeoapi
+- access to the generic processor provider
 
 Using a Python virtual environment is recommended.
 
@@ -94,23 +124,31 @@ Installing pygeoapi includes all runtime dependencies
 (see the `requirements*.txt` files of the framework).
 
 ---
-## Installation
+## Plugin Installation
 
 Clone the repository:
 
-git clone https://github.com/francescoingv/ingv-pygeoapi-process-plugins.git
+```
+git clone https://github.com/francescoingv/ingv-pygeoapi-process-plugins
+```
 
 Enter the project directory:
 
+```
 cd ingv-pygeoapi-process-plugins
+```
 
 Install the package:
 
+```
 pip install .
+```
 
 Alternatively, for development:
 
+```
 pip install -e .
+```
 
 ---
 ## Usage
@@ -142,45 +180,21 @@ pygeoapi openapi generate example-config.yml --output-file example-openapi.yml
 pygeoapi will automatically expose the corresponding API endpoint.
 
 ---
-## Plugin architecture
-
-### Base plugin: BaseRemoteExecutionProcessor
-
-The base plugin:
-
-- receives and manages the execution request
-- forwards the execution request to an **external processing service** used by pygeoapi
-
-### Specific plugins
-
-Each plugin derived from `BaseRemoteExecutionProcessor` is specific for a given code:
-
-- contains metadata describing how the service should be used
-- validates input parameters
-- returns the result in the format expected by pygeoapi
-
-## External processing service
-
-A design choice was made **not to execute processing code on the same server** running pygeoapi, allowing full independence between the execution environments of different plugins, particularly regarding the libraries required by each code.
-
-Each plugin calls a processing service hosted at a specific URL; therefore, a dedicated server is assumed for each processing code.
 
 ### Directory and job management
 
 Each processing request is managed as a job identified by a UUID.
 
-Each plugin is associated with a directory (defined in the plugin configuration via `private_processor_dir`), under which a specific directory is created for each job, identified by the unique job identifier (UUID - Universally Unique Identifier).
+Each plugin is associated with a directory (defined in the plugin configuration via `private_processor_dir`),
+under which a specific directory is created for each job,
+identified by the unique job identifier (UUID - Universally Unique Identifier).
 
-The plugin can read and write files within the job directory while processing.
-
-If the **external processing service** uses input files or returns output files:
-
-- if the service has access to the plugin directory (shared directory), plugin and service can exchange files through it;
-- otherwise, file contents must be transferred through the request/response body.
-
-The exchange of information between the plugin and the service is implemented specifically within each plugin.
+The plugin can read and write files within the job directory while processing:
+- if the service has access to the plugin directory (shared directory),
+  plugin and service can exchange files through it.
 
 ---
+
 ## External processing service interface
 
 The external processing service must respond to the following request:
@@ -267,6 +281,7 @@ In that case the following structure must be created:
 The repository includes a Docker configuration that allows running the processing service in a container environment.
 
 ---
+
 ## Environment variables
 
 Environment variables are referenced in the configuration file using placeholders of the form `$VARIABLE$`.
@@ -274,29 +289,26 @@ Environment variables are referenced in the configuration file using placeholder
 During deployment these placeholders must be replaced with the actual environment variable values.
 
 ---
-## Related software
 
-This repository is part of the **INGV pygeoapi processing platform**:
+## Related projects
 
-https://github.com/francescoingv/ingv-pygeoapi-processing-platform  
-Platform DOI: https://doi.org/10.5281/zenodo.18892848
+This platform builds on:
 
-The execution service for application codes is implemented in the repository:
-
-https://github.com/francescoingv/generic-processor-provider  
-DOI: https://doi.org/10.5281/zenodo.18892842
-
-This service receives HTTP requests from the pygeoapi plugins and executes
-the configured application codes.
+**pygeoapi**\
+https://github.com/geopython/pygeoapi\
+DOI: https://doi.org/10.5281/zenodo.121585259
 
 ---
+
 ## Citation
 
 If you use this software in scientific work, please cite it as:
 
-Martinelli, F. (2026).  
-*INGV pygeoapi process plugins*.  
+Martinelli, F. (2026).
+*INGV pygeoapi process plugins*.
 DOI: https://doi.org/10.5281/zenodo.18892819
+
+---
 
 ## License
 
@@ -304,8 +316,18 @@ This project is distributed under the **MIT License**.
 
 See the `LICENSE` file for details.
 
-## Authors
+---
 
-Francesco Martinelli  
-Istituto Nazionale di Geofisica e Vulcanologia (INGV)  
+## Author
+
+Francesco Martinelli
+Istituto Nazionale di Geofisica e Vulcanologia (INGV)
 Pisa, Italy
+
+------------------------------------------------------------------------
+
+## Acknowledgements
+
+Developed at the **Istituto Nazionale di Geofisica e Vulcanologia
+(INGV)**.
+
