@@ -191,7 +191,7 @@ PROCESS_METADATA = {
 
   'links': [{
     'href': 'https://civ.pi.ingv.it/project/pybox-2/',
-    'type': 'text/html',
+    'rel': 'related'
     },
     {
     'href': 'https://github.com/silviagians/PyBOX-Web',
