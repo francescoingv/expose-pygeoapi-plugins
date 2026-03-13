@@ -189,27 +189,27 @@ PROCESS_METADATA = {
   # type: array, 
   #   items: {type: string, enum: ['value', 'reference'], default: 'value'}
 
-  'links': [{
-    'href': 'https://civ.pi.ingv.it/project/pybox-2/',
-    'rel': 'related'
-    },
+  'links': [
     {
-    'href': 'https://github.com/silviagians/PyBOX-Web',
+    'href': 'https://civ.pi.ingv.it/project/pybox-2/',
+    'rel': 'related',
     'type': 'text/html',
-    'rel': 'about',
-    'title': 'GitHub repository'
+    'title': 'CIV repository'
     },
     {
     'href': 'https://doi.org/10.5281/zenodo.2616551',
-    'rel': 'service-doc',
+    'rel': 'describedby',
     'type': 'application/pdf',
-    'hreflang': 'en-US'
+    'hreflang': 'en-US',
+    'title': 'PyBox: a Python tool for simulating the kinematics of Pyroclastic '
+        'density currents with the box-model approach, Reference and User\'s Guide'
     },
     {
     'href': 'http://dx.doi.org/10.1016/j.jvolgeores.2016.08.002',
     'rel': 'describedby',
     'type': 'text/html',
-    'hreflang': 'en-US'
+    'hreflang': 'en-US',
+    'title': 'A fast, calibrated model for pyroclastic density currents kinematics and hazard'
     },
     {
     "href": "https://doi.org/10.5281/zenodo.18920969",
@@ -252,6 +252,18 @@ PROCESS_METADATA = {
   # type: array
   #   items: type: string
 
+  'metadata': [
+    {
+      'title': 'Source repository',
+      'role': 'repository',
+      'href': 'https://github.com/silviagians/PyBOX-Web'
+    },
+    {
+      'title': 'Silvia Giansante',
+      'role': 'author',
+      'href': 'https://orcid.org/0009-0008-2803-0873'
+    },
+  ],
   # 'metadata':
   # type: array
   #   items: {type: object, title: string, role: string, href: string}
