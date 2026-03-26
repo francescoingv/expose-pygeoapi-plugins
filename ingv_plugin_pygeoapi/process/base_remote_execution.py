@@ -41,6 +41,7 @@ from urllib.parse import urljoin, urlparse
 
 from pygeoapi.process.base import (
     BaseProcessor,
+    GenericError,
     ProcessorExecuteError,
     ProcessorGenericError,
 )
@@ -461,6 +462,106 @@ class BaseRemoteExecutionProcessor(BaseProcessor):
         LOGGER.debug(f'returning: mimetype = {mimetype}')
         LOGGER.debug(f'returning: process_output = {body}')
         return mimetype, body
+
+    def resolveSingleOccurrence(self, occurrence):
+        """
+        Resolve alternative ways to pass a single input parameter.
+        """
+
+        # value is an object
+        if isinstance(occurrence, dict):
+            if "value" in occurrence:
+                return occurrence["value"]
+
+            elif "href" in occurrence:
+                # opzionalmente puoi validare gli attributi ammessi
+                allowed_attrs = {"href", "rel", "type", "hreflang", "title"}
+                extra_keys = set(occurrence.keys()) - allowed_attrs
+                if extra_keys:
+                    err_msg = (
+                        f"Invalid attributes for href object: {extra_keys}"
+                    )
+                    raise GenericError(err_msg)
+
+                err_msg = "href handling not implemented"
+                raise GenericError(err_msg)
+
+            elif "bbox" in occurrence:
+                err_msg = "bbox handling not implemented"
+                raise GenericError(err_msg)
+
+            elif "collection" in occurrence:
+                err_msg = "collection handling not implemented"
+                raise GenericError(err_msg)
+
+            else:
+                err_msg = f"Invalid object format"
+                raise GenericError(err_msg)
+
+        # value is not a dict
+        else:
+            return occurrence
+
+    def resolveInputData(self, inputData: dict) -> dict:
+        """
+        Resolve alternative ways to pass input parameters and check the values.
+        """
+        result = {}
+        for key, occurrences in inputData.items():
+            if key not in self.metadata['inputs']:
+                err_msg = (f"unexpected input parameter: {key}")
+                raise ProcessorExecuteError(err_msg)
+            
+            maxOccurs = self.metadata['inputs'][key].get('maxOccurs', 1)
+            minOccurs = self.metadata['inputs'][key].get('minOccurs', 1)
+            schema =  self.metadata['inputs'][key]['schema']
+
+            if maxOccurs > 1:
+                if not isinstance(occurrences, list):
+                    err_msg = (f"Expected array for input parameter: {key} .")
+                    raise ProcessorExecuteError(err_msg)
+                n = len(occurrences)
+                if not (minOccurs <= n <= maxOccurs):
+                    err_msg = (
+                        f"Invalid number of occurrences for input parameter '{key}': "
+                        f"expected between {minOccurs} and {maxOccurs}, got {n}."
+                    )
+                    raise ProcessorExecuteError(err_msg)
+
+                input = []
+                for occurrence in occurrences:
+                    try:
+                        instance = self.resolveSingleOccurrence(occurrence)
+                        # TO DO: if resolve to a reference
+                        # ################################
+                    except GenericError as ex:
+                        err_msg = (f"On key {key}: {ex.message}")
+                        raise ProcessorExecuteError(err_msg)
+                    
+                    validation_errors = validate_json(schema, instance)
+                    if validation_errors:
+                        raise ProcessorExecuteError(validation_errors)
+
+                    input.append(instance)
+                
+                result[key] = input
+                
+            else:
+                try:
+                    instance = self.resolveSingleOccurrence(occurrences)
+                    # TO DO: if resolve to a reference
+                    # ################################
+                except GenericError as ex:
+                    err_msg = (f"On key {key}: {ex.message}")
+                    raise ProcessorExecuteError(err_msg)
+
+                validation_errors = validate_json(schema, instance)
+                if validation_errors:
+                    raise ProcessorExecuteError(validation_errors)
+                
+                result[key] = instance
+
+        return result
 
 
     def __repr__(self):
