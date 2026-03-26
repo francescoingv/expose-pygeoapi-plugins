@@ -43,7 +43,6 @@ from pygeoapi.process.base import (
 )
 from ingv_plugin_pygeoapi.process.base_remote_execution import (
     BaseRemoteExecutionProcessorLocalReference,
-    validate_json,
     CHART_SCHEMA,
 )
 
@@ -411,6 +410,19 @@ PROCESS_METADATA = {
           "\"dt\":0.5,\"margin\":5000},"
           "\"outputs\":{\"dem\":{\"transmissionMode\": \"reference\"},"
           "\"spatial_evolution\":{\"transmissionMode\": \"value\"}}}'"
+    },
+    {
+      'curl_with_qualified_example__href_not_supported_yet': 
+          "curl -k -L -X POST "
+          "\"https://voice.pi.ingv.it/geoinquire/processes/pybox/execution\" "
+          "-H \"Content-Type: application/json\" "
+          "-d '{\"inputs\":{\"lon\":{\"value\":-90.88},"
+          "\"lat\":{\"href\":15.47},\"l0\":150,\"h0\":150,"
+          "\"theta0\":500,\"multiple_values\":[{"
+          "\"eps0\":0.01,\"rhos\":1000,\"ds\":0.0001}],"
+          "\"dt\":0.5,\"margin\":5000},"
+          "\"outputs\":{\"dem\":{\"transmissionMode\": \"reference\"},"
+          "\"spatial_evolution\":{\"transmissionMode\": \"value\"}}}'"
     }
   ]
   # curl -k -L -X POST "https://voice.pi.ingv.it/geoinquire/processes/pybox/execution" -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" :  -90.88, "lat" : 15.47, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : ["input_data", "dem", "spatial_evolution"] }'
@@ -422,6 +434,7 @@ PROCESS_METADATA = {
   #                          "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}], 
   #                          "dt" : 0.5, "margin" : 5000 }}'
   # curl localhost:5000/processes/pybox/execution -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" :  -90.88, "lat" : 15.47, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : ["input_data", "dem", "spatial_evolution"] }'
+  # curl localhost:5000/processes/pybox/execution -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" :  { "value" : -90.88 }, "lat" : 15.47, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : ["input_data", "dem", "spatial_evolution"] }'
   # curl localhost:5000/processes/pybox/execution -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" :  -90.88, "lat" : 15.47, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : {"input_data": { "transmissionMode": "value" }, "dem" : { "transmissionMode": "value" }, "spatial_evolution": { "transmissionMode": "value" } } }'
   #
 }
@@ -834,7 +847,7 @@ class PyboxProcessor(BaseRemoteExecutionProcessorLocalReference):
 
         return self.format_output(produced_outputs, outputs)
 
-    def prepare_input(self, data, working_dir: Path, outputs):
+    def prepare_input(self, inputData, working_dir: Path, outputs):
         # Verify input parameters matching definitions.
         LOGGER.debug(f'Validating input')
         # NOTE: input attributes are all simple values or array,
@@ -843,11 +856,13 @@ class PyboxProcessor(BaseRemoteExecutionProcessorLocalReference):
         # The items of the array "multiple_values" are complex object, but
         # they are not input attributes, and the option "value"/"reference"
         # does not apply.
-        validation_errors = validate_json(
-            INPUT_SCHEMA, data
-        )
-        if validation_errors:
-            raise ProcessorExecuteError(validation_errors)
+        data = self.resolveInputData(inputData)
+        
+#        validation_errors = validate_json(
+#            INPUT_SCHEMA, data
+#        )
+#        if validation_errors:
+#            raise ProcessorExecuteError(validation_errors)
 
         valori_eps0 = []
         valori_rhos = []

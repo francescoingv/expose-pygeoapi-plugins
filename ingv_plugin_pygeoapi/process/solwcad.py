@@ -39,7 +39,6 @@ from pygeoapi.process.base import (
 )
 from ingv_plugin_pygeoapi.process.base_remote_execution import (
     BaseRemoteExecutionProcessorLocalReference,
-    validate_json,
 )
 
 LOGGER = logging.getLogger(__name__)
@@ -553,55 +552,13 @@ class SolwcadProcessor(BaseRemoteExecutionProcessorLocalReference):
                 
         return self.format_output(produced_outputs, outputs)
 
-    def prepare_input(self, data, working_path: Path, outputs):
-        try:
-            # NOTE: input attribute "swinput.data" is a complex object,
-            # therefore can either be trasferred by "value" or by "reference".
-            # Currently only "value" is supported (could improve return
-            # with proper code);
-            # input attribute "sw.data" is an array and the option
-            # "value"/"reference" does not apply.
-          swinput = data['swinput.data']['value']
-          sw = data['sw.data']
-        except (KeyError, TypeError) as err:
-            err_msg = 'Input not correctly formatted: ' + str(err) + '.'
-            raise ProcessorExecuteError(err_msg)
+    def prepare_input(self, inputData, working_path: Path, outputs):
+        data = self.resolveInputData(inputData)
 
-        # Verify parameters matching definitions.
-        LOGGER.debug(f'Validating input')
-        validation_errors = validate_json(
-            INPUT_SCHEMA['properties']['swinput.data'], swinput
-        )
-        if validation_errors:
-            raise ProcessorExecuteError(validation_errors)
-        
-        validation_errors = validate_json(
-            INPUT_SCHEMA['properties']['sw.data'], sw
-        )
-        if validation_errors:
-            raise ProcessorExecuteError(validation_errors)
-
-#        try:
-#        swinput = data['swinput.data']['value']
-#        sw = data['sw.data']
-#        except (KeyError, TypeError) as err:
-#            err_msg = 'Input not correctly formatted: ' + str(err) + '.'
-#            raise ProcessorExecuteError(err_msg)
-
-#        try:
-#            swinput = data['swinput.data']['value']
-#            sw = []
-#            for item in data['sw.data']:
-#                sw.append(item['value'])
-#        except Exception as err:
-#            err_msg = 'Input not correctly formatted: ' + str(err) + '\'.'
-#            raise ProcessorExecuteError(err_msg)
+        swinput = data['swinput.data']
+        sw = data['sw.data']
 
         kl = swinput.get('kl', None)
-#        if kl is None:
-#            err_msg = 'Value \'swinput.data[\'kl\']\' must be provided.'
-#            raise ProcessorExecuteError(err_msg)
-#
 
         ndat1 = swinput.get('ndat1', None)
         ndat2 = swinput.get('ndat2', None)
@@ -611,32 +568,14 @@ class SolwcadProcessor(BaseRemoteExecutionProcessorLocalReference):
         tlimit = swinput.get('tlimit', None)
         match kl:
             case 0 | -1:
-#                try:
                 int(ndat1)
                 int(ndat2)
-#                except (ValueError, TypeError):
-#                    err_msg = 'Values \'swinput.data[\'ndat1\']\' and ' \
-#                              ' \'swinput.data[\'ndat2\']\' must be integer.'
-#                    raise ProcessorExecuteError(err_msg)
                 swinput['iopen'] = 0
                 swinput['fopen'] = swinput['dt'] = swinput['tlimit'] = "0.0"
             case 1:
-#                try:
                 swinput['iopen'] = iopen = int(iopen)
-#                    if ((iopen < 0) or (iopen > 1)):
-#                        err_msg = 'Value \'swinput.data[\'iopen\']\' ' \
-#                                  'must be [0, 1].'
-#                        raise ProcessorExecuteError(err_msg)
-#                except (ValueError, TypeError):
-#                    err_msg = 'Value \'swinput.data[\'iopen\']\' ' \
-#                              'must be integer.'
-#                    raise ProcessorExecuteError(err_msg)
-
                 swinput['fopen'] = fopen = str(fopen)
                 if (iopen == 1):
-#                    if not re.match(pattern_generic_number, fopen):
-#                        err_msg = 'Value \'swinput.data[\'fopen\']\' ' \
-#                                  'not correctly formatted.'
                     pass
                 else:
                     swinput['fopen'] = "0.0"
@@ -644,61 +583,16 @@ class SolwcadProcessor(BaseRemoteExecutionProcessorLocalReference):
                 swinput['ndat2'] = 0
                 swinput['dt'] = swinput['tlimit'] = "0.0"
             case 2:
-#                try:
                 swinput['iopen'] = iopen = int(iopen)
-#                    if ((iopen < 0) or (iopen > 1)):
-#                        err_msg = 'Value \'swinput.data[\'iopen\']\' ' \
-#                                  'must be [0, 1].'
-#                        raise ProcessorExecuteError(err_msg)
-#                except (ValueError, TypeError):
-#                    err_msg = 'Value \'swinput.data[\'iopen\']\' ' \
-#                              'must be integer.'
-#                    raise ProcessorExecuteError(err_msg)
-
                 swinput['fopen'] = fopen = str(fopen)
                 if (iopen == 1):
-#                    if not re.match(pattern_generic_number, fopen):
-#                        err_msg = 'Value \'swinput.data[\'fopen\']\' ' \
-#                                  'not correctly formatted.'
                     pass
                 else:
                     swinput['fopen'] = "0.0"
 
                 swinput['dt'] = dt = str(dt)
-#                if not re.match(pattern_generic_number, dt):
-#                    err_msg = 'Value \'swinput.data[\'dt\']\' ' \
-#                              'not correctly formatted.'
-
                 swinput['tlimit'] = tlimit = str(tlimit)
-#                if not re.match(pattern_generic_number, tlimit):
-#                    err_msg = 'Value \'swinput.data[\'tlimit\']\' ' \
-#                              'not correctly formatted.'
-
                 swinput['ndat2'] = 0
-#            case _:
-#                err_msg = 'Value \'swinput.data[\'kl\']\' not accepted.'
-#                raise ProcessorExecuteError(err_msg)
-
-#        if not isinstance(sw, list | tuple):
-#            err_msg = 'Received \'sw.data\' with wrong format: not a sequence.'
-#            raise ProcessorExecuteError(err_msg)
-
-#        for sw_line in sw:
-#            if not isinstance(sw_line, list | tuple):
-#                err_msg = 'In \'sw.data\' received an item ' \
-#                          'with wrong format: not a sequence.'
-#                raise ProcessorExecuteError(err_msg)
-#
-#            if len(sw_line) != 14:
-#                err_msg = 'In \'sw.data\' received an item with ' \
-#                          'wrong number of items: ' + str(len(sw_line)) + '.'
-#                raise ProcessorExecuteError(err_msg)
-#
-#            for number in sw_line:
-#                if not re.match(pattern_generic_number, str(number)):
-#                    err_msg = 'Value in \'sw.data\' ' \
-#                              'not correctly formatted: \'' + number + '\'.'
-#                    raise ProcessorExecuteError(err_msg)
 
         # Create input file(s) required to run the 'code'
         # ###############################################
