@@ -247,7 +247,8 @@ PROCESS_METADATA = {
     'Note: the script supports multiple particle classes.',
   # type: string
     
-  'keywords': ['TBD'],
+  'keywords': ['Python code', 'Box model', 'Pyroclastic density currents',
+               'Invasion maps', 'Hazard assessment'],
   # type: array
   #   items: type: string
 

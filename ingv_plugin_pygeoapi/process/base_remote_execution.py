@@ -599,25 +599,46 @@ class BaseRemoteExecutionProcessorLocalReference(BaseRemoteExecutionProcessor):
         """
         super().__init__(processor_def, process_metadata)
 
-        if 'reference' in process_metadata.get('outputTransmission', []):
+        if 'reference' in self.metadata.get('outputTransmission', []):
             try:
                 path = Path(processor_def.get("base_reference_dir"))
                 self.base_reference_path = path.resolve(strict=True)
-            except FileNotFoundError:
-                raise ProcessorGenericError(
-                    f"ERROR in configuration file: "
-                    "\'base_reference_dir\' for processor {self.name}.")
-
-            self.base_reference_url = processor_def.get('base_reference_url')
-            parsed = urlparse(self.base_reference_url)
-            if parsed.scheme not in ("http", "https") or not parsed.netloc:
-                raise ProcessorGenericError(
-                    f"ERROR in configuration file: Invalid URL "
-                    f"'base_reference_url' for processor {self.name}.")
-            if not self.base_reference_url.endswith("/"):
-                self.base_reference_url += "/"
-
-
+            except  (TypeError, FileNotFoundError, PermissionError):
+                if len(self.metadata.get('outputTransmission', [])) == 1:
+                    raise ProcessorGenericError(
+                        "ERROR in configuration file: output allowed only by "
+                        "reference and undefined or not existing path for "
+                        f"\'base_reference_dir\' for processor {self.name}.")
+                else:
+                    msg = (f"Processor {self.name} able to return output by "
+                        "reference, but in configuration file "
+                        "\'base_reference_dir\' undefined or path not existing."
+                        " Removing output transmition option \'by reference\'")
+                    LOGGER.error(msg)
+                    self.metadata['outputTransmission'].remove('reference')
+        if 'reference' in self.metadata.get('outputTransmission', []):
+            try:
+                self.base_reference_url = processor_def.get('base_reference_url')
+                parsed = urlparse(self.base_reference_url)
+                if parsed.scheme not in ("http", "https") or not parsed.netloc:
+                    raise ProcessorGenericError(
+                        f"ERROR in configuration file: Invalid URL "
+                        f"'base_reference_url' for processor {self.name}.")
+                if not self.base_reference_url.endswith("/"):
+                    self.base_reference_url += "/"
+            except  TypeError:
+                if len(self.metadata.get('outputTransmission', [])) == 1:
+                    raise ProcessorGenericError(
+                        "ERROR in configuration file: output allowed only by "
+                        "reference and undefined "
+                        f"\'base_reference_url\' for processor {self.name}.")
+                else:
+                    msg = (f"Processor {self.name} able to return output by "
+                        "reference, but in configuration file "
+                        "\'base_reference_url\' undefined."
+                        " Removing output transmition option \'by reference\'")
+                    LOGGER.error(msg)
+                    self.metadata['outputTransmission'].remove('reference')
 
 from jsonschema.validators import Draft202012Validator
 def validate_json(schema: dict, instance: dict) -> list:

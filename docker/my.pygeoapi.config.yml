@@ -130,6 +130,8 @@ resources:
             #remote_execute_synch: False # default value = True
             polling_time: 3 # default value = 3
             # max_waiting_time: # default value = 1
+            base_reference_url: $SOLWCAD_URL_HREF_RESULTS$
+            base_reference_dir: $SOLWCAD_DIR_HREF_RESULTS$
 
     conduit:
         type: process
@@ -140,6 +142,8 @@ resources:
             #remote_execute_synch: False # default value = True
             polling_time: 3 # default value = 3
             # max_waiting_time: # default value = 1
+            base_reference_url: $CONDUIT_URL_HREF_RESULTS$
+            base_reference_dir: $CONDUIT_DIR_HREF_RESULTS$
 
     pybox:
         type: process

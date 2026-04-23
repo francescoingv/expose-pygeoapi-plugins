@@ -305,7 +305,7 @@ PROCESS_METADATA = {
   #   items: {type: string, enum: ['sync-execute', 'async-execute', 'dismiss']}
 
   'outputTransmission': [
-    'value'
+    'value', 'reference'
   ],
   # type: array, 
   #   items: {type: string, enum: ['value', 'reference'], default: 'value'}

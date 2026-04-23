@@ -52,143 +52,139 @@ INPUT_SCHEMA = {
   "title": "Conduit Input Schema",
   "description": "Schema for Conduit plugin inputs",
   "type": "object",
-  "required": ["components"],
+  "required": ["melt_composition", "volatiles", "crystals", "fragmentation", "pressure_temperature", "geometry", "searching_mode"],
+
   "additionalProperties": False,
+  
   "properties": {
-    "components": {
-      "title": "Model parameters", # optional
-      "description":
-        "Parameters to calculate the multiphase, multicomponent flow "
-        "of magma along the volcanic conduit. Values must be in scientific "
-        "notation (e.g., 1.E3). "
-        "Search for the mass flow rate at costant conduit "
-        "diameter.", # optional
+    "melt_composition": {
+      "title": "Melt composition",
+      "description": "Melt oxides",
       "type": "object",
-      "required": [
-        "p", "t", "d", "l", "sio2", "tio2", "al2o3",
-        "fe2o3", "feo", "mno", "mgo", "cao", "na2o", "k2o",
-        "h2o", "co2", "fe", "pd", "dp", "ds", "dc", "c", "den"
-      ],
-      "additionalProperties": False,
+      'required': ['sio2', 'tio2', 'al2o3', 'fe2o3', 'feo', 'mno', 'mgo', 'cao', 'na2o', 'k2o'],
       "properties": {
-        "fg": {
-          # optional
-          "type": "number",
-          "title": "Mass flow rate [kg/s]",
-          "description": "Initial guess for the mass flow rate, "
-            "along a cylindrical conduit (optional, default value: 1.0E8). "
-            "If the code does not converge, you "
-            "can play around with this value.",
-          "exclusiveMinimum": 0.0
-        },
-        "p": {
-          "type": "number",
-          "title": "Pressure [Pa]",
-          "description": "Pressure in the magma chamber.",
-          "exclusiveMinimum": 101325.0
-        },
-        "t": {
-          "type": "number",
-          "title": "Temperature [K]",
-          "description": "Magma temperature",
-          "exclusiveMinimum": 273.15
-        },
-        "d": {
-          "type": "number",
-          "title": "Conduit diameter [m]",
-          "description": "Diameter of the cylindrical conduit",
-          "exclusiveMinimum": 0.0
-        },
-        "l": {
-          "type": "number",
-          "title": "Conduit length [m]",
-          "description": "Length of the cylindrical conduit",
-          "exclusiveMinimum": 0.0
-        },
         "sio2": {
           "type": "number",
           "title": "SiO2",
-          "description": "Melt composition: Weight fraction of SiO2.",
+          "description": "Weight fraction of SiO2.",
           "exclusiveMinimum": 0.0,
           "exclusiveMaximum": 1.0
         },
         "tio2": {
           "type": "number",
           "title": "TiO2",
-          "description": "Melt composition: Weight fraction of TiO2",
+          "description": "Weight fraction of TiO2",
           "exclusiveMinimum": 0.0,
           "exclusiveMaximum": 1.0
         },
         "al2o3": {
           "type": "number",
           "title": "Al2O3",
-          "description": "Melt composition: Weight fraction of Al2O3",
+          "description": "Weight fraction of Al2O3",
           "exclusiveMinimum": 0.0,
           "exclusiveMaximum": 1.0
         },
         "fe2o3": {
           "type": "number",
           "title": "Fe2O3",
-          "description": "Melt composition: Weight fraction of Fe2O3",
+          "description": "Weight fraction of Fe2O3",
           "exclusiveMinimum": 0.0,
           "exclusiveMaximum": 1.0
         },
         "feo": {
           "type": "number",
           "title": "FeO",
-          "description": "Melt composition: Weight fraction of FeO",
+          "description": "Weight fraction of FeO",
           "exclusiveMinimum": 0.0,
           "exclusiveMaximum": 1.0
         },
         "mno": {
           "type": "number",
           "title": "MnO",
-          "description": "Melt composition: Weight fraction of MnO",
+          "description": "Weight fraction of MnO",
           "exclusiveMinimum": 0.0,
           "exclusiveMaximum": 1.0
         },
         "mgo": {
           "type": "number",
           "title": "MgO",
-          "description": "Melt composition: Weight fraction of MgO",
+          "description": "Weight fraction of MgO",
           "exclusiveMinimum": 0.0,
           "exclusiveMaximum": 1.0
         },
         "cao": {
           "type": "number",
           "title": "CaO",
-          "description": "Melt composition: Weight fraction of CaO",
+          "description": "Weight fraction of CaO",
           "exclusiveMinimum": 0.0,
           "exclusiveMaximum": 1.0
         },
         "na2o": {
           "type": "number",
           "title": "Na2O",
-          "description": "Melt composition: Weight fraction of Na2O",
+          "description": "Weight fraction of Na2O",
           "exclusiveMinimum": 0.0,
           "exclusiveMaximum": 1.0
         },
         "k2o": {
           "type": "number",
           "title": "K2O",
-          "description": "Melt composition: Weight fraction of K2O",
+          "description": "Weight fraction of K2O",
           "exclusiveMinimum": 0.0,
           "exclusiveMaximum": 1.0
         },
+      }
+    },
+    "volatiles": {
+      "title": "Volatile composition",
+      "description": "Volatile oxides",
+      "type": "object",
+      'required': ['h2o', 'co2'],
+      "properties": {
         "h2o": {
           "type": "number",
           "title": "H2O",
-          "description": "Volatiles: Weight fraction of total H2O",
+          "description": "Weight fraction of total H2O",
           "exclusiveMinimum": 0.0,
           "exclusiveMaximum": 1.0
         },
         "co2": {
           "type": "number",
           "title": "CO2",
-          "description": "Volatiles: Weight fraction of total CO2",
+          "description": "Weight fraction of total CO2",
           "exclusiveMinimum": 0.0,
           "exclusiveMaximum": 1.0
         },
+      }
+    },
+    "crystals": {
+      "title": "Crystals",
+      "description": "Crystals",
+      "type": "object",
+      'required': ['c', 'den'],
+      "properties": {
+        "c": {
+          "type": "number",
+          "title": "Crystal volume fraction",
+          "description":
+            "Volume fraction of crystals relative to a degassed magma.",
+          "exclusiveMinimum": 0.0,
+          "maximum": 0.7
+        },
+        "den": {
+          "type": "number",
+          "title": "Crystal density [kg/m^3]",
+          "description": "Average density of the crystal phase.",
+          "exclusiveMinimum": 0.0,
+        }
+      }
+    },
+    "fragmentation": {
+      "title": "Fragmentation",
+      "description": "Fragmentation parameters",
+      "type": "object",
+      'required': ['fe', 'pd', 'dp', 'ds', 'dc'],
+      "properties": {
         "fe": {
           "type": "number",
           "title": "Fragmentation efficiency",
@@ -222,21 +218,98 @@ INPUT_SCHEMA = {
             "Average diameter of the crystals at fragmentation",
           "exclusiveMinimum": 0.0,
         },
-        "c": {
-          "type": "number",
-          "title": "Crystal volume fraction",
-          "description":
-            "Volume fraction of crystals relative to a degassed magma.",
-          "exclusiveMinimum": 0.0,
-          "maximum": 0.7
-        },
-        "den": {
-          "type": "number",
-          "title": "Crystal density [kg/m^3]",
-          "description": "Average density of the crystal phase.",
-          "exclusiveMinimum": 0.0,
-        }
       }
+    },
+    "pressure_temperature": {
+      "title": "Pressure and temperature",
+      "description": "Pressure and temperature",
+      "type": "object",
+      'required': ['p', 't'],
+      "properties": {
+        "p": {
+          "type": "number",
+          "title": "Pressure [Pa]",
+          "description": "Pressure in the magma chamber.",
+          "exclusiveMinimum": 101325.0
+        },
+        "t": {
+          "type": "number",
+          "title": "Temperature [K]",
+          "description": "Magma temperature",
+          "exclusiveMinimum": 273.15
+        },
+      }
+    },
+    "geometry": {
+      "title": "Geometry",
+      "description": "Geometry of the conduit",
+      "type": "object",
+      'required': ['g', 'l'],
+      "properties": {
+        "g": {
+          "type": "string",
+          "title": "Geometry",
+          "description": "Geometry: cylindrical conduit ('conduit'), "
+            "planar fissure ('fissure')",
+          "enum": ["conduit", "fissure"]
+        },
+        "l": {
+          "type": "number",
+          "title": "Conduit length [m]",
+          "description": "Length of the cylindrical conduit",
+          "exclusiveMinimum": 0.0
+        },
+      }
+    },
+    "searching_mode": {
+      'title': 'Searching mode',
+      'description': 'Searching for mass flow rate or diameter',
+      "type": "object",
+      'oneOf': [
+        {
+          'description': '',
+          'required': ['d'],
+          "additionalProperties": False,
+          'properties': {
+            "d": {
+              "type": "number",
+              "title": "Conduit diameter [m]",
+              "description": "Diameter of the cylindrical conduit/fissure width",
+              "exclusiveMinimum": 0.0
+            },
+            "fg": {
+              # optional
+              "type": "number",
+              "title": "Mass flow rate [kg/s] (-g cylinder) or mass flow rate per "
+                "unit surface [kg/(s m^2)] (-g fissure)",
+              "description": "Initial guess for the mass flow rate along a "
+                "cylindrical conduit/fissure (optional, default value: 1.0E8/1.0E5).",
+              "exclusiveMinimum": 0.0
+            },
+          }
+        },
+        {
+          'description': '',
+          'required': ['f'],
+          "additionalProperties": False,
+          'properties': {
+            "f": {
+              "type": "number",
+              "title": "Mass flow rate [kg/s] (-g cylinder) or mass flow rate per "
+                "unit surface [kg/(s m^2)] (-g fissure)",
+              "description": "Mass flow rate along a cylindrical conduit/fissure.",
+              "exclusiveMinimum": 0.0
+            },
+            "dg": {
+              # optional
+              "type": "number",
+              "title": "Conduit diameter [m]",
+              "description": "Initial guess for the diameter of the cylindrical conduit/fissure width",
+              "exclusiveMinimum": 0.0
+            },
+          }
+        },
+      ]
     }
   }
 }
@@ -256,7 +329,7 @@ PROCESS_METADATA = {
   'id': 'conduit',
   # type string
 
-  'version': '2.1.0',
+  'version': '2.2.0',
   # type string
 
   # Optional properties:
@@ -270,18 +343,12 @@ PROCESS_METADATA = {
   #   items: {type: string, enum: ['sync-execute', 'async-execute', 'dismiss']}
   
   'outputTransmission': [
-    'value'
+    'value', 'reference'
   ],
   # type: array, 
   #   items: {type: string, enum: ['value', 'reference'], default: 'value'}
 
-  'links': [{
-    'href': 'https://www.nature.com/articles/17109',
-    'rel': 'describedby',
-    'type': 'application/pdf',
-    'hreflang': 'en-US',
-    'title': 'Strain-induced magma fragmentation in explosive eruptions'
-  },
+  'links': [
   {
     'href': 'https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2000JB900428',
     'rel': 'describedby',
@@ -290,113 +357,120 @@ PROCESS_METADATA = {
     'title': 'Dynamics of magma flow in volcanic conduits with variable fragmentation efficiency and nonequilibrium pumice degassing'
   },
   {
+    'href': 'https://www.nature.com/articles/17109',
+    'rel': 'related',
+    'type': 'application/pdf',
+    'hreflang': 'en-US',
+    'title': 'Strain-induced magma fragmentation in explosive eruptions'
+  },
+  {
     'href': 'https://doi.org/10.1002/2016JB013383',
-    'rel': 'describedby',
+    'rel': 'related',
     'type': 'application/pdf',
     'hreflang': 'en-US',
     'title': 'Non-Newtonian flow of bubbly magma in volcanic conduits'
   },
   {
     'href': 'https://doi.org/10.3389/feart.2021.681083',
-    'rel': 'describedby',
+    'rel': 'related',
     'type': 'application/pdf',
     'hreflang': 'en-US',
     'title': 'Deep Magma Transport Control on the Size and Evolution of Explosive Volcanic Eruptions'
   },
   {
     'href': 'https://doi.org/10.1016/S0377-0273(02)00381-5',
-    'rel': 'describedby',
+    'rel': 'related',
     'type': 'application/pdf',
     'hreflang': 'en-US',
     'title': 'Coupled conduit and atmospheric dispersal dynamics of the AD 79 Plinian eruption of Vesuvius'
   },
   {
     'href': 'https://link.springer.com/article/10.1007/s004450000123',
-    'rel': 'describedby',
+    'rel': 'related',
     'type': 'application/pdf',
     'hreflang': 'en-US',
     'title': 'Textural heterogeneities in pumices from the climactic eruption of Mount Pinatubo, 15 June 1991, and implications for magma ascent dynamics'
   },
   {
     'href': 'https://doi.org/10.1130/G25402A.1',
-    'rel': 'describedby',
+    'rel': 'related',
     'type': 'application/pdf',
     'hreflang': 'en-US',
     'title': 'Origin of basalt fire-fountain eruptions on Earth versus the Moon'
   },
   {
     'href': 'https://doi.org/10.5194/se-1-61-2010',
-    'rel': 'describedby',
+    'rel': 'related',
     'type': 'application/pdf',
     'hreflang': 'en-US',
     'title': 'Rheological control on the dynamics of explosive activity in the 2000 summit eruption of Mt. Etna'
   },
   {
     'href': 'https://doi.org/10.1016/S0377-0273(03)00319-6',
-    'rel': 'describedby',
+    'rel': 'related',
     'type': 'application/pdf',
     'hreflang': 'en-US',
     'title': 'Dynamics of magma ascent and fragmentation in trachytic versus rhyolitic eruptions'
   },
   {
     'href': 'https://doi.org/10.1016/j.jvolgeores.2008.05.012',
-    'rel': 'describedby',
+    'rel': 'related',
     'type': 'application/pdf',
     'hreflang': 'en-US',
     'title': 'Vent conditions for expected eruptions at Vesuvius'
   },
   {
     'href': 'https://doi.org/10.1016/j.chemgeo.2006.06.007',
-    'rel': 'describedby',
+    'rel': 'related',
     'type': 'application/pdf',
     'hreflang': 'en-US',
     'title': 'The effect of H2O on the viscosity of K-trachytic melts at magmatic temperatures'
   },
   {
     'href': 'https://doi.org/10.1016/S0377-0273(98)00101-2',
-    'rel': 'describedby',
+    'rel': 'related',
     'type': 'application/pdf',
     'hreflang': 'en-US',
     'title': 'The role of magma composition and water content in explosive eruptions: 1. Conduit ascent dynamics'
   },
   {
     'href': 'https://doi.org/10.1029/93JB02972',
-    'rel': 'describedby',
+    'rel': 'related',
     'type': 'application/pdf',
     'hreflang': 'en-US',
     'title': 'Magma flow along the volcanic conduit during the Plinian and pyroclastic flow phases of the May 18, 1980, Mount St. Helens eruption'
   },
   {
     'href': 'https://doi.org/10.1016/0377-0273(93)90104-Y',
-    'rel': 'describedby',
+    'rel': 'related',
     'type': 'application/pdf',
     'hreflang': 'en-US',
     'title': 'Modeling of the ascent of magma during the plinian eruption of Vesuvius in A.D. 79'
   },
   {
     'href': 'https://link.springer.com/article/10.1007/s004450050253',
-    'rel': 'describedby',
+    'rel': 'related',
     'type': 'application/pdf',
     'hreflang': 'en-US',
     'title': 'Role of carbon dioxide in the dynamics of magma ascent in explosive eruptions'
   },
   {
     'href': 'https://doi.org/10.1016/S1464-1895(99)00142-8',
-    'rel': 'describedby',
+    'rel': 'related',
     'type': 'application/pdf',
     'hreflang': 'en-US',
     'title': 'Numerical simulations of magma ascent along volcanic conduits'
   },
   {
     'href': 'https://doi.org/10.1016/S1464-1895(99)00144-1',
-    'rel': 'describedby',
+    'rel': 'related',
     'type': 'application/pdf',
     'hreflang': 'en-US',
     'title': 'The role of water content and magma composition on explosive eruption dynamics'
   },
   {
     'href': 'https://doi.org/10.1016/0012-821X(94)90037-X',
-    'rel': 'describedby',
+    'rel': 'related',
     'type': 'application/pdf',
     'hreflang': 'en-US',
     'title': 'Erosion processes in volcanic conduits and application to the AD 79 eruption of Vesuvius'
@@ -418,35 +492,32 @@ PROCESS_METADATA = {
   # type: string
 
   'description':
-    'CONDUIT4 (Papale, 2001) [Nature, 397(6718), 425-428] is a Fortran code '
-    'for computing the one-dimensional, steady, isothermal, multiphase and '
-    'multicomponent flow of magma in volcanic conduits. The code solves the '
-    'compressible mass balance and momentum balance equations separately for a '
-    'gas phase and a dense phase constituted by liquid+crystals '
-    '(below fragmentation), or by pyroclasts (above fragmentation). '
-    'A user-defined fragmentation efficiency parameter describes the relative '
-    'amounts of non-vesicular ash, vesicular pumice, and free crystals '
-    'generated at fragmentation; while another user-defined parameter '
-    'describes pumice degassing disequilibrium. The model takes either choked '
-    'flow or atmospheric pressure conditions at the conduit exit, with the '
-    'alternative being part of the solution thus depending on the selected '
-    'conditions. '
-    'The numerical algorithm searches for such an exit condition by adapting '
-    'the mass flow-rate to the selected conduit diameter. '
-    'Thermodynamic equilibrium phase between the gas (H2O+CO2) and the '
-    'silicate melt is calculated through the SOLWCAD model '
+    'CONDUIT4 is a Fortran code for computing the one-dimensional, steady, '
+    'isothermal, multiphase and multicomponent flow of magma in volcanic '
+    'conduits. The code solves the compressible mass balance and momentum '
+    'balance equations separately for a gas phase and a dense phase '
+    'constituted by liquid+crystals (below fragmentation), or by pyroclasts '
+    '(above fragmentation). A user-defined fragmentation efficiency parameter '
+    'describes the relative amounts of non-vesicular ash, vesicular pumice, '
+    'and free crystals generated at fragmentation; while another user-defined '
+    'parameter describes pumice degassing disequilibrium. The model takes '
+    'either choked flow or atmospheric pressure conditions at the conduit '
+    'exit, with the alternative being part of the solution thus depending on '
+    'the selected conditions. The numerical algorithm searches for such an '
+    'exit condition by adapting the mass flow-rate to the selected conduit '
+    'diameter. Thermodynamic equilibrium phase between the gas (H2O+CO2) and '
+    'the silicate melt is calculated through the SOLWCAD model '
     '(Papale et al., 2006, [Chemical Geology, 229(1-3), 78-95]), '
-    'implemented within CONDUIT4. Magma fragmentation is determined '
-    'based on Maxwell’s theory for visco-elastic materials, as described in '
-    'Papale (1999).'
-    'The viscosity of the liquid is calculated according to '
-    'Giordano et al. (2008) '
-    '[Earth and Planetary Science Letters, 271.1-4: 123-134], '
-    'and the effect of crystals on viscosity is based on the model of '
-    'Costa et al. (2009) '
-    '[Geochemistry, Geophysics, Geosystems, 10(3)]. '
-    'The transport and constitutive equations, as well as the numerical '
-    'approach, are detailed in Papale (2001) [Nature, 397(6718), 425-428].',
+    'implemented within CONDUIT4. Magma fragmentation is determined based on '
+    'Maxwell\'s theory for visco-elastic materials, as described in '
+    'Papale (1999) [Nature, 397(6718), 425-428]. The viscosity of the liquid '
+    'is calculated according to Giordano et al. (2008) [Earth and Planetary '
+    'Science Letters, 271.1-4: 123-134], and the effect of crystals on '
+    'viscosity is based on the model of Costa et al. (2009) '
+    '[Geochemistry, Geophysics, Geosystems, 10(3)]. The transport and '
+    'constitutive equations, as well as the numerical approach, are detailed '
+    'in Papale (2001) '
+    '[Journal of Geophysical Research: Solid Earth, 106(B6), 11043-11065].',
   # type: string
   
   'keywords': ['Fortran code', 'conduit flow'],
@@ -464,13 +535,55 @@ PROCESS_METADATA = {
   # >>>>>>>>>>>>
   'inputs': {
     # inputDescription.yaml
-    'components': {
-      'title': INPUT_SCHEMA['properties']['components']['title'],
-      'description': INPUT_SCHEMA['properties']['components']['description'],
-      'schema': INPUT_SCHEMA['properties']['components'],
+    'melt_composition': {
+      'title': INPUT_SCHEMA['properties']['melt_composition']['title'],
+      'description': INPUT_SCHEMA['properties']['melt_composition']['description'],
+      'schema': INPUT_SCHEMA['properties']['melt_composition'],
       'minOccurs': 1,
       'maxOccurs': 1
-    }
+    },
+    'volatiles': {
+      'title': INPUT_SCHEMA['properties']['volatiles']['title'],
+      'description': INPUT_SCHEMA['properties']['volatiles']['description'],
+      'schema': INPUT_SCHEMA['properties']['volatiles'],
+      'minOccurs': 1,
+      'maxOccurs': 1
+    },
+    'crystals': {
+      'title': INPUT_SCHEMA['properties']['crystals']['title'],
+      'description': INPUT_SCHEMA['properties']['crystals']['description'],
+      'schema': INPUT_SCHEMA['properties']['crystals'],
+      'minOccurs': 1,
+      'maxOccurs': 1
+    },
+    'fragmentation': {
+      'title': INPUT_SCHEMA['properties']['fragmentation']['title'],
+      'description': INPUT_SCHEMA['properties']['fragmentation']['description'],
+      'schema': INPUT_SCHEMA['properties']['fragmentation'],
+      'minOccurs': 1,
+      'maxOccurs': 1
+    },
+    'pressure_temperature': {
+      'title': INPUT_SCHEMA['properties']['pressure_temperature']['title'],
+      'description': INPUT_SCHEMA['properties']['pressure_temperature']['description'],
+      'schema': INPUT_SCHEMA['properties']['pressure_temperature'],
+      'minOccurs': 1,
+      'maxOccurs': 1
+    },
+    'geometry': {
+      'title': INPUT_SCHEMA['properties']['geometry']['title'],
+      'description': INPUT_SCHEMA['properties']['geometry']['description'],
+      'schema': INPUT_SCHEMA['properties']['geometry'],
+      'minOccurs': 1,
+      'maxOccurs': 1
+    },
+    'searching_mode': {
+      'title': INPUT_SCHEMA['properties']['searching_mode']['title'],
+      'description': INPUT_SCHEMA['properties']['searching_mode']['description'],
+      'schema': INPUT_SCHEMA['properties']['searching_mode'],
+      'minOccurs': 1,
+      'maxOccurs': 1
+    },
   },
 
   'outputs': {
@@ -534,7 +647,7 @@ PROCESS_METADATA = {
       'description': 'Density, velocity, pressure and mass/volumetric flow rate at the conduit exit',
       'schema': {
         'type': 'string',
-          "contentMediaType": "text/plain"
+          'contentMediaType': 'text/plain'
       }
     }
   },
@@ -545,14 +658,41 @@ PROCESS_METADATA = {
     {
       'payload_example': {
         'inputs': {
-          'components': {
-            'value': {
-              'fg': 1.0E8, 'p': 1.0E8, 't': 1050, 'd': 60, 'l': 4000,
+          'melt_composition' : {
+            'value' : {
               'sio2': 0.7669, 'tio2': 0.0012, 'al2o3': 0.1322,
               'fe2o3': 0.0039, 'feo': 0.0038, 'mno': 0.0007, 'mgo': 0.0006,
-              'cao': 0.0080, 'na2o': 0.0300, 'k2o': 0.0512, 'h2o': 0.0500,
-              'co2': 0.0200, 'fe': 0.9, 'pd': 0.9, 'dp': 200e-6, 'ds': 200e-6,
-              'dc': 200e-6, 'c': 0.1, 'den': 2800
+              'cao': 0.0080, 'na2o': 0.0300, 'k2o': 0.0512
+            }
+          },
+          'volatiles' : {
+            'value' : {
+              'h2o': 0.0500e0, 'co2': 0.0200e0
+            } 
+          },
+          'crystals' : {
+            'value' : {
+              'c': 0.1, 'den': 2800.0e0
+            }
+          },
+          'fragmentation' : {
+            'value' : {
+              'fe': 0.2, 'pd': 0.9, 'dp': 200e-6, 'ds': 200e-6, 'dc': 200e-6
+            }
+          },
+          'pressure_temperature' : {
+            'value' : {
+              'p': 1.0e8, 't': 1050.0e0
+            }
+          },
+          'geometry' : {
+            'value' : {
+              'g': 'conduit', 'l': 4000.0e0
+            }
+          },
+          'searching_mode' : {
+            'value' : {
+              'f': 0.88393e8
             }
           }
         },
@@ -571,26 +711,44 @@ PROCESS_METADATA = {
         "curl -k -L -X POST "
         "\"https://voice.pi.ingv.it/geoinquire/processes/conduit/execution\" "
         "-H \"Content-Type: application/json\" "
-        "-d '{\"inputs\":"
-              "{\"components\":"
-                "{\"value\":"
-                  "{\"fg\":1.0e8,\"p\":1.0e8,\"t\":1050,"
-                    "\"d\":60,\"l\":4000,\"sio2\":0.7669,\"tio2\":0.0012,"
-                    "\"al2o3\":0.1322,\"fe2o3\":0.0039,\"feo\":0.0038,"
-                    "\"mno\":0.0007,\"mgo\":0.0006,\"cao\":0.0080,"
-                    "\"na2o\":0.0300,\"k2o\":0.0512,\"h2o\":0.0500,"
-                    "\"co2\":0.0200,\"fe\":0.9,\"pd\":0.9,\"dp\":200e-6,"
-                    "\"ds\":200e-6,\"dc\":200e-6,\"c\":0.1,\"den\":2800"
-                  "}"
-                "}"
-              "},"
-            "\"outputs\":[\"gas\",\"velocity\"]}'"
+        "-d '{"
+          "\"inputs\": {"
+            "\"melt_composition\": {"
+              "\"value\": {"
+                "\"sio2\": 0.7669, \"tio2\": 0.0012, \"al2o3\": 0.1322, "
+                "\"fe2o3\": 0.0039, \"feo\": 0.0038,  \"mno\": 0.0007, "
+                "\"mgo\": 0.0006, \"cao\": 0.0080, \"na2o\": 0.0300, "
+                "\"k2o\": 0.0512} }, "
+            "\"volatiles\": {"
+              "\"value\": {\"h2o\": 0.0500e0, \"co2\": 0.0200e0} }, "
+            "\"crystals\": {\"value\": {\"c\": 0.1, \"den\": 2800.0e0} }, "
+            "\"fragmentation\": {"
+              "\"value\": {"
+                "\"fe\": 0.2, \"pd\": 0.9, \"dp\": 200e-6, \"ds\": 200e-6,"
+                "\"dc\": 200e-6} }, "
+            "\"pressure_temperature\": {"
+              "\"value\": {\"p\": 1.0e8, \"t\": 1050.0e0} }, "
+            "\"geometry\": {\"value\": {\"g\": \"conduit\", \"l\": 4000.0e0} }, "
+            "\"searching_mode\": {\"value\": {\"f\": 0.88393e8} } "
+          "},"
+          "\"outputs\":[\"gas\",\"velocity\"]}'"
       )
     }
   ]
-  # curl localhost:5000/processes/conduit/execution -H 'Content-Type: application/json' -d '{ "inputs" : { "components" : { "value" : {"fg": 1.0e8, "p": 1.0e8, "t": 1050.0e0, "d": 60.0e0, "l": 4000.0e0, "sio2": 0.7669, "tio2": 0.0012, "al2o3": 0.1322, "fe2o3": 0.0039, "feo": 0.0038, "mno": 0.0007, "mgo": 0.0006, "cao": 0.0080, "na2o": 0.0300, "k2o": 0.0512, "h2o": 0.0500e0, "co2": 0.0200e0, "fe": 0.2, "pd": 0.9, "dp": 200e-6, "ds": 200e-6, "dc": 200e-6, "c": 0.1, "den": 2800.0e0 } } }, "outputs" : { "gas" : { "transmissionMode": "value" }, "velocity" : { "transmissionMode": "value" } } }'
-  # curl localhost:5000/processes/conduit/execution -H 'Content-Type: application/json' -H 'Prefer: respond-async' -d '{ "inputs" : { "components" : { "value" : {"fg": 1.0e8, "p": 1.0e8, "t": 1050.0e0, "d": 60.0e0, "l": 4000.0e0, "sio2": 0.7669, "tio2": 0.0012, "al2o3": 0.1322, "fe2o3": 0.0039, "feo": 0.0038, "mno": 0.0007, "mgo": 0.0006, "cao": 0.0080, "na2o": 0.0300, "k2o": 0.0512, "h2o": 0.0500e0, "co2": 0.0200e0, "fe": 0.2, "pd": 0.9, "dp": 200e-6, "ds": 200e-6, "dc": 200e-6, "c": 0.1, "den": 2800.0e0 } } }, "outputs" : { "gas" : { "transmissionMode": "value" }, "velocity" : { "transmissionMode": "value" } } }'
-  # curl -k -L -X POST "https://voice.pi.ingv.it/geoinquire/processes/conduit/execution" -H "Content-Type: application/json" -d '{ "inputs" : { "components" : { "value" : {"fg": 1.0e8, "p": 1.0e8, "t": 1050.0e0, "d": 60.0e0, "l": 4000.0e0, "sio2": 0.7669, "tio2": 0.0012, "al2o3": 0.1322, "fe2o3": 0.0039, "feo": 0.0038, "mno": 0.0007, "mgo": 0.0006, "cao": 0.0080, "na2o": 0.0300, "k2o": 0.0512, "h2o": 0.0500e0, "co2": 0.0200e0, "fe": 0.2, "pd": 0.9, "dp": 200e-6, "ds": 200e-6, "dc": 200e-6, "c": 0.1, "den": 2800.0e0 } } }, "outputs" : { "gas" : { "transmissionMode": "value" }, "velocity" : { "transmissionMode": "value" } } }'
+
+  # NEW VERSION : TEST 
+  # curl localhost:5000/processes/conduit/execution -H 'Content-Type: application/json' -d '{ "inputs" : 
+  #   { "melt_composition" : { "value" : {"sio2": 0.7669, "tio2": 0.0012, "al2o3": 0.1322, "fe2o3": 0.0039, "feo": 0.0038,  "mno": 0.0007, "mgo": 0.0006, "cao": 0.0080, "na2o": 0.0300, "k2o": 0.0512} },
+  #     "volatiles" : { "value" : {"h2o": 0.0500e0, "co2": 0.0200e0} },
+  #     "crystals" : { "value" : {"c": 0.1, "den": 2800.0e0} },
+  #     "fragmentation" : { "value" : {"fe": 0.2, "pd": 0.9, "dp": 200e-6, "ds": 200e-6, "dc": 200e-6} },
+  #     "pressure_temperature" : { "value" : {"p": 1.0e8, "t": 1050.0e0} },
+  #     "geometry" : { "value" : {"g": "conduit", "l": 4000.0e0} },
+  #     "searching_mode" : { "value" : {"f": 0.88393e8} }
+  #   }, "outputs" : { "gas" : { "transmissionMode": "value" }, "velocity" : { "transmissionMode": "value" } } }'
+  # NEW VERSION : TEST 
+  # curl localhost:5000/processes/conduit/execution -H 'Content-Type: application/json' -d '{ "inputs" : { "melt_composition" : { "value" : {"sio2": 0.7669, "tio2": 0.0012, "al2o3": 0.1322, "fe2o3": 0.0039, "feo": 0.0038,  "mno": 0.0007, "mgo": 0.0006, "cao": 0.0080, "na2o": 0.0300, "k2o": 0.0512} }, "volatiles" : { "value" : {"h2o": 0.0500e0, "co2": 0.0200e0} }, "crystals" : { "value" : {"c": 0.1, "den": 2800.0e0} }, "fragmentation" : { "value" : {"fe": 0.2, "pd": 0.9, "dp": 200e-6, "ds": 200e-6, "dc": 200e-6} }, "pressure_temperature" : { "value" : {"p": 1.0e8, "t": 1050.0e0} }, "geometry" : { "value" : {"g": "conduit", "l": 4000.0e0} }, "searching_mode" : { "value" : {"f": 0.88393e8} } }, "outputs" : { "gas" : { "transmissionMode": "value" }, "velocity" : { "transmissionMode": "value" } } }'
+  # curl -k -L -X POST "https://voice.pi.ingv.it/geoinquire/processes/conduit/execution" -H "Content-Type: application/json" -d '{ "inputs" : { "melt_composition" : { "value" : {"sio2": 0.7669, "tio2": 0.0012, "al2o3": 0.1322, "fe2o3": 0.0039, "feo": 0.0038,  "mno": 0.0007, "mgo": 0.0006, "cao": 0.0080, "na2o": 0.0300, "k2o": 0.0512} }, "volatiles" : { "value" : {"h2o": 0.0500e0, "co2": 0.0200e0} }, "crystals" : { "value" : {"c": 0.1, "den": 2800.0e0} }, "fragmentation" : { "value" : {"fe": 0.2, "pd": 0.9, "dp": 200e-6, "ds": 200e-6, "dc": 200e-6} }, "pressure_temperature" : { "value" : {"p": 1.0e8, "t": 1050.0e0} }, "geometry" : { "value" : {"g": "conduit", "l": 4000.0e0} }, "searching_mode" : { "value" : {"f": 0.88393e8} } }, "outputs" : { "gas" : { "transmissionMode": "value" }, "velocity" : { "transmissionMode": "value" } } }'
   #
 }
 
@@ -842,35 +1000,18 @@ class ConduitProcessor(BaseRemoteExecutionProcessorLocalReference):
 
         return self.format_output(produced_outputs, outputs)
 
-    def prepare_input(self, data, working_path: Path, outputs):
-        try:
-            # NOTE: the input attribute "components" is a complex object,
-            # therefore can either be trasferred by "value" or by "reference".
-            # Currently only "value" is supported (could improve return
-            # with proper code).
-            components = data['components']['value']
-        except (KeyError, TypeError) as err:
-            err_msg = 'Input not correctly formatted: ' + str(err) + '.'
-            raise ProcessorExecuteError(err_msg)
-        
-        # Verify parameters matching definitions.
-        LOGGER.debug(f'Validating input')
-        validation_errors = validate_json(
-            INPUT_SCHEMA['properties']['components'], components
-        )
-        if validation_errors:
-            raise ProcessorExecuteError(validation_errors)
+    def prepare_input(self, inputData, working_path: Path, outputs):
+        data = self.resolveInputData(inputData)
 
         # Create the dictionary with the properties to be passed to the 'code'
         # where property_name=parameter_name, property_value=parameter_value
         # ###############################################
         code_input_param = {}
-        for name in components:
-            param_value = components[name]
-
-            # Add as input parameter
-            input_flag = '-' + name
-            code_input_param[input_flag] = param_value
+        for input_item in data.values():
+            for name, value in input_item.items():
+              # Add as input parameter
+              input_flag = '-' + name
+              code_input_param[input_flag] = value
         
         return code_input_param
 
