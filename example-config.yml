@@ -32,6 +32,7 @@ server:
         host: 0.0.0.0
         port: 5000
     url: http://localhost:5000
+#    url: http://host.docker.internal:5000
     mimetype: application/json; charset=UTF-8
     encoding: utf-8
     gzip: false
@@ -329,10 +330,10 @@ resources:
 #              time_field: created
 #              title_field: title
 
-#    hello-world:
-#        type: process
-#        processor:
-#            name: HelloWorld
+    hello-world:
+        type: process
+        processor:
+            name: HelloWorld
 
     solwcad:
         type: process
