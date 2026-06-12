@@ -708,7 +708,7 @@ PROCESS_METADATA = {
     },
     {
       'curl_example': (
-        "curl -k -L -X POST "
+        "curl -i -k -L -X POST "
         "\"https://voice.pi.ingv.it/geoinquire/processes/conduit/execution\" "
         "-H \"Content-Type: application/json\" "
         "-d '{"
@@ -733,6 +733,45 @@ PROCESS_METADATA = {
           "},"
           "\"outputs\":[\"gas\",\"velocity\"]}'"
       )
+    },
+    {
+      'curl_example_alsoByReference': (
+        "curl -i -k -L -X POST "
+        "\"https://voice.pi.ingv.it/geoinquire/processes/conduit/execution\" "
+        "-H \"Content-Type: application/json\" "
+        "-d '{"
+          "\"inputs\": {"
+            "\"melt_composition\": {"
+              "\"value\": {"
+                "\"sio2\": 0.7669, \"tio2\": 0.0012, \"al2o3\": 0.1322, "
+                "\"fe2o3\": 0.0039, \"feo\": 0.0038,  \"mno\": 0.0007, "
+                "\"mgo\": 0.0006, \"cao\": 0.0080, \"na2o\": 0.0300, "
+                "\"k2o\": 0.0512} }, "
+            "\"volatiles\": {"
+              "\"value\": {\"h2o\": 0.0500e0, \"co2\": 0.0200e0} }, "
+            "\"crystals\": {\"value\": {\"c\": 0.1, \"den\": 2800.0e0} }, "
+            "\"fragmentation\": {"
+              "\"value\": {"
+                "\"fe\": 0.2, \"pd\": 0.9, \"dp\": 200e-6, \"ds\": 200e-6,"
+                "\"dc\": 200e-6} }, "
+            "\"pressure_temperature\": {"
+              "\"value\": {\"p\": 1.0e8, \"t\": 1050.0e0} }, "
+            "\"geometry\": {\"value\": {\"g\": \"conduit\", \"l\": 4000.0e0} }, "
+            "\"searching_mode\": {\"value\": {\"f\": 0.88393e8} } "
+          "},"
+          "\"outputs\":{\"gas\":{\"transmissionMode\": \"reference\"}, "
+                       "\"velocity\":{\"transmissionMode\": \"value\"}}}'"
+      )
+    },
+    {
+      'curl_jobStatus_request': 
+          "curl -k -L "
+          "\"https://voice.pi.ingv.it/jobs/<jobID>\""
+    },
+    {
+      'curl_jobResults_request': 
+          "curl -k -L "
+          "\"https://voice.pi.ingv.it/jobs/<jobID>/results\"?f=json"
     }
   ]
 

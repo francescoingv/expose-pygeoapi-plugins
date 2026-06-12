@@ -413,7 +413,7 @@ PROCESS_METADATA = {
           "\"spatial_evolution\":{\"transmissionMode\": \"value\"}}}'"
     },
     {
-      'curl_request_with_qualified_example__href_not_supported_yet': 
+      'curl_request_with_qualified_example__href-only_not_supported_yet': 
           "curl -k -L -X POST "
           "\"https://voice.pi.ingv.it/geoinquire/processes/pybox/execution\" "
           "-H \"Content-Type: application/json\" "
@@ -433,7 +433,7 @@ PROCESS_METADATA = {
     {
       'curl_jobResults_request': 
           "curl -k -L "
-          "\"https://voice.pi.ingv.it/jobs/<jobID>/results\""
+          "\"https://voice.pi.ingv.it/jobs/<jobID>/results\"?f=json"
     }
   ]
   # curl -k -L -X POST "https://voice.pi.ingv.it/geoinquire/processes/pybox/execution" -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" :  -90.88, "lat" : 15.47, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : ["input_data", "dem", "spatial_evolution"] }'

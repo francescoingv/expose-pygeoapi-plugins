@@ -441,7 +441,7 @@ PROCESS_METADATA = {
     },
     {
         'curl_example': (
-            "curl -k -L -X POST "
+            "curl -i -k -L -X POST "
             "\"https://voice.pi.ingv.it/geoinquire/processes/solwcad/execution\" "
             "-H \"Content-Type: application/json\" "
             "-d '{ \"inputs\":{\"swinput.data\":{\"value\":{"
@@ -454,6 +454,16 @@ PROCESS_METADATA = {
             "\".7053\",\".0032\",\".1301\",\".0027\",\".0146\",\".0006\","
             "\".0118\",\".0232\",\".0378\",\".0306\"]]}}'"
         )
+    },
+    {
+      'curl_jobStatus_request': 
+          "curl -k -L "
+          "\"https://voice.pi.ingv.it/jobs/<jobID>\""
+    },
+    {
+      'curl_jobResults_request': 
+          "curl -k -L "
+          "\"https://voice.pi.ingv.it/jobs/<jobID>/results\"?f=json"
     }
   ]
 
