@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: INGV pygeoapi process plugins
+title: EXPOSE plugins
 message: "If you use this software, please cite it as below."
 type: software
 
@@ -8,13 +8,14 @@ authors:
     given-names: Francesco
     affiliation: Istituto Nazionale di Geofisica e Vulcanologia (INGV)
 
-repository-code: https://github.com/francescoingv/ingv-pygeoapi-process-plugins
-url: https://github.com/francescoingv/ingv-pygeoapi-process-plugins
+repository-code: https://github.com/francescoingv/expose-pygeoapi-plugins
+url: https://github.com/francescoingv/expose-pygeoapi-plugins
 
 abstract: >
   Pygeoapi plugins implementing scientific processing services
   exposed through the OGC API - Processes standard within the
-  INGV pygeoapi processing platform.
+  EXPOSE (EXecutables for OGC API PrOcesses and Scientific Environments)
+  platform.
 
 keywords:
   - pygeoapi
@@ -24,14 +25,14 @@ keywords:
   - process services
 
 license: MIT
-version: 1.0.2
-date-released: 2026-04-23
+version: 1.1.0
+date-released: 2026-06-12
 doi: 10.5281/zenodo.18892819
 
 references:
   - type: software
-    title: INGV pygeoapi processing platform
-    repository-code: https://github.com/francescoingv/ingv-pygeoapi-processing-platform
+    title: EXPOSE (EXecutables for OGC API PrOcesses and Scientific Environments) platform
+    repository-code: https://github.com/francescoingv/expose-pygeoapi-platform
     doi: 10.5281/zenodo.18892848
 
   - type: software

@@ -124,7 +124,7 @@ resources:
     solwcad:
         type: process
         processor:
-            name: 'ingv_plugin_pygeoapi.process.solwcad.SolwcadProcessor'
+            name: 'expose-plugins.process.solwcad.SolwcadProcessor'
             private_processor_dir: $PYGEOAPI_BASE_PRIVATE_DIRECTORY$/$SOLWCAD_SERVICE_ID$/
             url_executor: $SOLWCAD_URL_BASE$
             #remote_execute_synch: False # default value = True
@@ -136,7 +136,7 @@ resources:
     conduit:
         type: process
         processor:
-            name: 'ingv_plugin_pygeoapi.process.conduit.ConduitProcessor'
+            name: 'expose-plugins.process.conduit.ConduitProcessor'
             private_processor_dir: $PYGEOAPI_BASE_PRIVATE_DIRECTORY$/$CONDUIT_SERVICE_ID$/
             url_executor: $CONDUIT_URL_BASE$
             #remote_execute_synch: False # default value = True
@@ -148,7 +148,7 @@ resources:
     pybox:
         type: process
         processor:
-            name: 'ingv_plugin_pygeoapi.process.pybox.PyboxProcessor'
+            name: 'expose-plugins.process.pybox.PyboxProcessor'
             private_processor_dir: $PYGEOAPI_BASE_PRIVATE_DIRECTORY$/$PYBOX_SERVICE_ID$/
             url_executor: $PYBOX_URL_BASE$
             #remote_execute_synch: False # default value = True

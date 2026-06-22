@@ -1,7 +1,7 @@
 {
-  "title": "INGV pygeoapi process plugins",
+  "title": "EXPOSE plugins",
   "upload_type": "software",
-  "description": "Plugins for pygeoapi process services developed at INGV.",
+  "description": "Plugins for pygeoapi process services developed as part of the EXPOSE platform project.",
   "creators": [
     {
       "name": "Martinelli, Francesco",
@@ -9,7 +9,7 @@
     }
   ],
   "license": "MIT",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "access_right": "open",
   "language": "eng",
   "keywords": [

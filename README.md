@@ -1,19 +1,20 @@
-# INGV pygeoapi process plugins
+# EXPOSE plugins
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18892819.svg)](https://doi.org/10.5281/zenodo.18892819)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.x-blue.svg)
 
 Plugins implementing **OGC API - Processes** using **pygeoapi** for the
-INGV pygeoapi processing platform.
-(https://github.com/francescoingv/ingv-pygeoapi-processing-platform)
+EXPOSE (EXecutables for OGC API PrOcesses and Scientific Environments) platform.
+(https://github.com/francescoingv/expose-pygeoapi-platform)
 
 ---
 
 ## Overview
 
 This repository contains **pygeoapi process plugins** used by the
-INGV pygeoapi processing platform to expose scientific processing
+EXPOSE (EXecutables for OGC API PrOcesses and Scientific Environments)
+platform to expose scientific processing
 programs through the **OGC API - Processes** standard.
 
 The plugins act as a bridge between:
@@ -87,8 +88,8 @@ Derived classes must define:
 
 | Component | Repository | DOI | Role |
 |-----------|------------|-----|------|
-| processing platform | [ingv-pygeoapi-processing-platform](https://github.com/francescoingv/ingv-pygeoapi-processing-platform) | https://doi.org/10.5281/zenodo.18892848 | platform architecture |
-| pygeoapi process plugins | [ingv-pygeoapi-process-plugins](https://github.com/francescoingv/ingv-pygeoapi-process-plugins) | https://doi.org/10.5281/zenodo.18892819 | OGC API process implementation |
+| processing platform | [expose-pygeoapi-platform](https://github.com/francescoingv/expose-pygeoapi-platform) | https://doi.org/10.5281/zenodo.18892848 | platform architecture |
+| pygeoapi process plugins | [expose-pygeoapi-plugins](https://github.com/francescoingv/expose-pygeoapi-plugins) | https://doi.org/10.5281/zenodo.18892819 | OGC API process implementation |
 | generic processor provider | [generic-processor-provider](https://github.com/francescoingv/generic-processor-provider) | https://doi.org/10.5281/zenodo.18892842 | remote execution service |
 
 ---
@@ -129,13 +130,13 @@ Installing pygeoapi includes all runtime dependencies
 Clone the repository:
 
 ```
-git clone https://github.com/francescoingv/ingv-pygeoapi-process-plugins
+git clone https://github.com/francescoingv/expose-pygeoapi-plugins
 ```
 
 Enter the project directory:
 
 ```
-cd ingv-pygeoapi-process-plugins
+cd expose-pygeoapi-plugins
 ```
 
 Install the package:
@@ -168,7 +169,7 @@ processes:
   example-process:
     type: process
     processor:
-      name: ingv_plugin_pygeoapi.process.example_process
+      name: expose_plugins.process.example_process
 ```
 
 After configuring the process the OpenAPI configuration file must be generated, for example:
@@ -265,10 +266,10 @@ In that case the following structure must be created:
 ./
 ├── Dockerfile
 ├── my.pygeoapi.config.yml
-└── ingv_plugin/
+└── expose/
     ├── pyproject.toml
     ├── setup.py
-    └── ingv_plugin_pygeoapi/
+    └── expose_plugins/
         ├── __init__.py
         └── process/
             ├── base_remote_execution.py
@@ -305,7 +306,7 @@ DOI: https://doi.org/10.5281/zenodo.121585259
 If you use this software in scientific work, please cite it as:
 
 Martinelli, F. (2026).
-*INGV pygeoapi process plugins*.
+*EXPOSE plugins*.
 DOI: https://doi.org/10.5281/zenodo.18892819
 
 ---

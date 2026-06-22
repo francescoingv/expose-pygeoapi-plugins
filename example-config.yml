@@ -330,15 +330,15 @@ resources:
 #              time_field: created
 #              title_field: title
 
-    hello-world:
-        type: process
-        processor:
-            name: HelloWorld
+#    hello-world:
+#        type: process
+#        processor:
+#            name: HelloWorld
 
     solwcad:
         type: process
         processor:
-            name: 'ingv_plugin_pygeoapi.process.solwcad.SolwcadProcessor'
+            name: 'expose-plugins.process.solwcad.SolwcadProcessor'
             private_processor_dir: /home/francesco/Progetti/OGC_API/clone_pygeoapi/custom_process_dir/solwcad/
             url_executor: 'http://127.0.0.1:5001'
             #remote_execute_synch: False # default value = True
@@ -349,7 +349,7 @@ resources:
     conduit:
         type: process
         processor:
-            name: 'ingv_plugin_pygeoapi.process.conduit.ConduitProcessor'
+            name: 'expose-plugins.process.conduit.ConduitProcessor'
             private_processor_dir: /home/francesco/Progetti/OGC_API/clone_pygeoapi/custom_process_dir/conduit/
             url_executor: 'http://127.0.0.1:5001'
             #remote_execute_synch: False # default value = True
@@ -360,7 +360,7 @@ resources:
     pybox:
         type: process
         processor:
-            name: 'ingv_plugin_pygeoapi.process.pybox.PyboxProcessor'
+            name: 'expose-plugins.process.pybox.PyboxProcessor'
             private_processor_dir: /home/francesco/Progetti/OGC_API/clone_pygeoapi/custom_process_dir/pybox/
             url_executor: 'http://127.0.0.1:5001'
             #remote_execute_synch: False # default value = True

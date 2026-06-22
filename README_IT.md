@@ -1,6 +1,6 @@
-# INGV pygeoapi process plugins
+# EXPOSE plugins
 
-Plugin per estendere **pygeoapi** con processi di elaborazione sviluppati da **INGV**.
+Plugin per estendere **pygeoapi** con processi di elaborazione sviluppati all'interno del progetto **EXPOSE**.
 
 Questo repository contiene una collezione di plugin che permettono di esporre tramite **pygeoapi** servizi di elaborazione compatibili con lo standard **OGC API - Processes**.
 
@@ -12,7 +12,7 @@ In particolare supporta lo standard [OGC API - Processes](https://ogcapi.ogc.org
 
 Attraverso i plugin presenti in questo repository è possibile integrare nuovi processi di elaborazione all'interno di un'istanza pygeoapi.
 
-I plugin permettono di esporre servizi sviluppati da INGV tramite interfacce API standard, rendendo i processi accessibili tramite richieste HTTP.
+I plugin permettono di esporre servizi di processing tramite interfacce API standard, rendendo i processi accessibili tramite richieste HTTP.
 
 ## Architettura della soluzione
 
@@ -25,7 +25,7 @@ standard **OGC API - Processes**.
 
 ### 2. Plugin pygeoapi
 
-Il repository https://github.com/francescoingv/ingv-pygeoapi-process-plugins
+Il repository https://github.com/francescoingv/expose-pygeoapi-plugins
 contiene i plugin che implementano i processi pygeoapi.
 I plugin ricevono le richieste di esecuzione e le inoltrano a un
 servizio di elaborazione esterno responsabile dell'esecuzione del codice.
@@ -86,11 +86,11 @@ L’installazione di pygeoapi include tutte le librerie necessarie al runtime
 
 Clonare il repository:
 
-git clone https://github.com/francescoingv/ingv-pygeoapi-process-plugins.git
+git clone https://github.com/francescoingv/expose-pygeoapi-plugins.git
 
 Entrare nella directory del progetto:
 
-cd ingv-pygeoapi-process-plugins
+cd expose-pygeoapi-plugins
 
 Installare il pacchetto:
 
@@ -117,7 +117,7 @@ processes:
   example-process:
     type: process
     processor:
-      name: ingv_plugin_pygeoapi.process.example_process
+      name: expose-plugins.process.example_process
 ```
 
 Dopo aver configurato il processo deve essere generato il file di configurazione OpenAPI, ad esempio:
@@ -272,10 +272,10 @@ In tal caso è necessario creare la seguente struttura:
 ./
 ├── Dockerfile
 ├── my.pygeoapi.config.yml
-└── ingv_plugin/
+└── expose/
     ├── pyproject.toml
     ├── setup.py
-    └── ingv_plugin_pygeoapi/
+    └── expose-plugins/
         ├── __init__.py
         └── process/
             ├── base_remote_execution.py
@@ -403,7 +403,7 @@ i codici applicativi configurati tramite riga di comando.
 
 Se utilizzi questo software in un lavoro scientifico, ti preghiamo di citarlo come segue:
 
-Martinelli, F. (2026). INGV pygeoapi process plugins.
+Martinelli, F. (2026). EXPOSE plugins.
 
 Il DOI verrà aggiunto dopo la pubblicazione su Zenodo.
 
