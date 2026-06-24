@@ -8,6 +8,9 @@ Plugins implementing **OGC API - Processes** using **pygeoapi** for the
 EXPOSE (EXecutables for OGC API PrOcesses and Scientific Environments) platform.
 (https://github.com/francescoingv/expose-pygeoapi-platform)
 
+This repository contains a collection of plugins that allows the exposure of processing services
+compatible with the **OGC API - Processes** standard.
+
 ---
 
 ## Overview
@@ -190,9 +193,26 @@ Each plugin is associated with a directory (defined in the plugin configuration 
 under which a specific directory is created for each job,
 identified by the unique job identifier (UUID - Universally Unique Identifier).
 
-The plugin can read and write files within the job directory while processing:
-- if the service has access to the plugin directory (shared directory),
-  plugin and service can exchange files through it.
+The plugin can read and write files within the job directory while processing.
+
+When the external execution service requires input files or produces output files:
+
+- if the service has access to the plugin directory (shared directory), plugin and service can
+  exchange files directly through the filesystem;
+- if the service does not have access to the plugin directory,
+  file contents must be transferred through the HTTP request/response body.
+
+The strategy adopted for file exchange is implemented by the specific plugin
+according to the requirements of the scientific application.
+
+Some plugin implementations support OGC API - Processes output transmission modes through the `outputTransmission` metadata property, which may contain one or both of the following values:
+
+- `value`
+- `reference`
+
+When `reference` is requested, the output returned by the process contains a URL pointing to the generated result rather than the result value itself.
+
+Plugins derived from `BaseRemoteExecutionProcessorLocalReference` implement this behaviour by writing result files into a directory exposed through a web server.
 
 ---
 
@@ -255,6 +275,45 @@ GET /job_info/<string:job_id>
 
 Returns a JSON object containing job execution information.
 
+Example response:
+```json
+{
+  "job_id": "123e4567-e89b-12d3-a456-426614174000",
+  "job_info": {
+    "received": "2026-01-20T10:00:00Z",
+    "start_processing": "2026-01-20T10:01:00Z",
+    "end_processing": "2026-01-20T10:02:00Z",
+    "exit_code": 0,
+    "std_out": "Process standard output",
+    "std_err": ""
+  },
+  "params": {
+    "param1": "value1",
+    "param2": 123
+  }
+}
+```
+
+### Important fields:
+
+#### `exit_code`
+
+Process exit status (0 indicates successful execution).
+
+#### `std_out`
+
+Content written by the application to standard output.
+
+#### `std_err`
+
+Content written by the application to standard error.
+
+#### `params`
+
+Dictionary containing the parameters used for execution.
+These are typically derived from code_input_params in the POST request,
+although the execution service may add or modify parameters when required.
+
 ---
 ## Docker usage
 
@@ -289,6 +348,99 @@ Environment variables are referenced in the configuration file using placeholder
 
 During deployment these placeholders must be replaced with the actual environment variable values.
 
+
+### pygeoapi server
+
+- `$SERVER_NAME_geoinquire$`  
+  Server name hosting pygeoapi framework
+  (es. `localhost:5000`, `voice.pi.ingv.it`)
+
+- `$LOCATION_epos_pygeoapi$`  
+  Location name where to access pygeoapi framework
+  (e.g. empty string, or `geoinquire`)
+
+---
+
+### pygeoapi Job Manager
+Refer to PostgreSQLManager
+
+- `$PYGEOAPI_OUTPUT_DIR$`
+  directory used to write elaboration result files
+  
+- `$IP_ADDRESS_POSTGRES_SERVER$`
+  host for PostgreSQL
+  (e.g. 127.0.0.1)
+  
+- `$PORT_POSTGRES_SERVER$`
+  port used by PostgreSQL
+  (e.g. 5433, 5432)
+  
+Note: currently the configuration file do not use variables for `user` and `password` to access the DB;
+consider to add them where the DB is not isolated.
+
+```yaml
+user: ogc_api_user
+password: user
+```
+
+---
+
+### Plugin specific variables
+
+In the proposed configuration every plugin has a dedicated directory below
+a common directory containing the directories of all plugins.
+
+- `$PYGEOAPI_BASE_PRIVATE_DIRECTORY$`  
+  Base directory of all private plugin directories
+  (e.g. `/custom_process_dir`)
+
+- `$<SERVICE_ID>_SERVICE_ID$`  
+  Specific directory for the service offered by the plugin
+  (e.g. `solwcad`)
+
+- `$<SERVICE_ID>_URL_BASE$`  
+  Specific service URL
+  (e.g. `http://127.0.0.1:5001`)
+
+Plugin metadata have the attribute `outputTransmission` which
+can have either, or both the following values: `value`, `reference`.
+Accordingly, single elaboration requests may require the plugin
+to return each of the required results either as:
+- value ("transmissionMode": "value")
+- reference ("transmissionMode": "reference")
+
+In case `reference` is required, the output contains the URL to access
+to get the value.
+
+Plugins derived by the class `BaseRemoteExecutionProcessorLocalReference`
+implements the following logic: values are written to files in a directory
+which can accessed via URL.
+The server providing access to the URL is external to pygeoapi framework,
+but must have access to the directory where the file is present.
+Such plugins, if enabled to provide results by `reference`
+requires the following environment variables:
+
+- `$LOCAL_DIR_HREF_RESULTS$`  
+  is substituted in the configuration file (`local.config.yml`,
+  copied by `my.pygeoapi.config.yml`) to `$<SERVICE_ID>_DIR_HREF_RESULTS$`.
+  It is the directory where the plugin writes the files to be accessed by URL
+  (e.g. `/custom_process_url/`).
+  The directory may be the same for all plugins, as far as there will not be
+  duplicate file names.
+  Developed plugins use **job_id** as file name prefix, where 
+  job_id is a UUID, therefore duplicates are excluded.
+  Currently it is supposed to use a single directory for all the plugins,
+  but it is possible to have different directories.
+
+- `$LOCAL_URL_HREF_RESULTS$`  
+  is substituted in the configuration file (`local.config.yml`,
+  copied by `my.pygeoapi.config.yml`) to `$<SERVICE_ID>_URL_HREF_RESULTS$`.
+  Base URL to access files released into `$<SERVICE_ID>_DIR_HREF_RESULTS$`
+  (e.g. `http://process_results/myresults/`).
+  A service external to pygeoapi must be present to make the files available.
+  Currently it is supposed to use a single directory for all the plugins,
+  but it is possible to have different directories.
+
 ---
 
 ## Related projects
@@ -298,6 +450,7 @@ This platform builds on:
 **pygeoapi**\
 https://github.com/geopython/pygeoapi\
 DOI: https://doi.org/10.5281/zenodo.121585259
+
 
 ---
 
