@@ -10,6 +10,7 @@
   ],
   "license": "MIT",
   "version": "1.1.0",
+  "publication_date": "2026-06-24",
   "access_right": "open",
   "language": "eng",
   "keywords": [
@@ -30,12 +31,14 @@
       "_comment": "generic processor provider",
       "relation": "references",
       "identifier": "10.5281/zenodo.18892842",
+      "resource_type": "software",
       "scheme": "doi"
     },
     {
       "_comment": "pybox: Scientific processing code executed via these plugins",
       "relation": "references",
       "identifier": "10.5281/zenodo.18920969",
+      "resource_type": "software",
       "scheme": "doi"
     }
   ]

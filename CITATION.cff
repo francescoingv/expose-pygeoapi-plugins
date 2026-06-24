@@ -26,7 +26,7 @@ keywords:
 
 license: MIT
 version: 1.1.0
-date-released: 2026-06-12
+date-released: 2026-06-24
 doi: 10.5281/zenodo.18892819
 
 references:
@@ -36,7 +36,12 @@ references:
     doi: 10.5281/zenodo.18892848
 
   - type: software
-    title: Generic processor provider
+    title: Generic processor provider for EXPOSE plugins
     repository-code: https://github.com/francescoingv/generic-processor-provider
     doi: 10.5281/zenodo.18892842
+
+  - type: software
+    title: PyBOX-Web
+    repository-code: https://github.com/silviagians/PyBOX-Web
+    doi: 10.5281/zenodo.18920969
 

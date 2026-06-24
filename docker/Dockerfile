@@ -2,9 +2,9 @@
 # EPOS - pygeoapi container
 #
 # This image:
-# - installs a custom INGv pygeoapi plugin
+# - installs a custom pygeoapi plugin for project EXPOSE
 # - generates pygeoapi configuration at BUILD TIME
-# - binds EPOS processes (solwcad, conduit) via internal HTTP
+# - binds EPOS processes (solwcad, conduit, pybox) via internal HTTP
 #
 # IMPORTANT:
 # - All configuration is resolved during image build
@@ -84,10 +84,10 @@ RUN mkdir -p "${PYGEOAPI_BASE_PRIVATE_DIRECTORY}"
 
 
 # ==============================================================================
-# Installazione plugin custom INGV
+# Installazione plugin custom for project EXPOSE
 # ==============================================================================
-WORKDIR /ingv_plugin
-COPY ./ingv_plugin ./
+WORKDIR /expose_plugins
+COPY ./expose_plugins ./
 RUN python3 -m pip install --no-cache-dir --break-system-packages -e .
 
 # ==============================================================================

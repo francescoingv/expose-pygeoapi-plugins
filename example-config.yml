@@ -70,11 +70,11 @@ server:
 
     # ogc_schemas_location: /opt/schemas.opengis.net
 #    manager:
-#        name:  'pygeoapi_ingv_extensions.process.manager.base.BaseManager'
+#        name:  'expose_plugins.process.manager.base.BaseManager'
     
 logging:
 #    level: DEBUG
-#    logfile: ingv_plugin_pygeoapi.log
+#    logfile: expose_plugins.log
     level: ERROR
     #logfile: /tmp/pygeoapi.log
 
@@ -338,7 +338,7 @@ resources:
     solwcad:
         type: process
         processor:
-            name: 'expose-plugins.process.solwcad.SolwcadProcessor'
+            name: 'expose_plugins.process.solwcad.SolwcadProcessor'
             private_processor_dir: /home/francesco/Progetti/OGC_API/clone_pygeoapi/custom_process_dir/solwcad/
             url_executor: 'http://127.0.0.1:5001'
             #remote_execute_synch: False # default value = True
@@ -349,7 +349,7 @@ resources:
     conduit:
         type: process
         processor:
-            name: 'expose-plugins.process.conduit.ConduitProcessor'
+            name: 'expose_plugins.process.conduit.ConduitProcessor'
             private_processor_dir: /home/francesco/Progetti/OGC_API/clone_pygeoapi/custom_process_dir/conduit/
             url_executor: 'http://127.0.0.1:5001'
             #remote_execute_synch: False # default value = True
@@ -360,7 +360,7 @@ resources:
     pybox:
         type: process
         processor:
-            name: 'expose-plugins.process.pybox.PyboxProcessor'
+            name: 'expose_plugins.process.pybox.PyboxProcessor'
             private_processor_dir: /home/francesco/Progetti/OGC_API/clone_pygeoapi/custom_process_dir/pybox/
             url_executor: 'http://127.0.0.1:5001'
             #remote_execute_synch: False # default value = True

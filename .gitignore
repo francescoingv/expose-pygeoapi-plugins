@@ -22,7 +22,7 @@ dist/
 requirements*
 
 # But keep the plugin specific requirements (if present)
-!requirements_plugin_ingv.txt
+!requirements_expose_plugins.txt
 
 # Ignore compilation of configuration files
 example-openapi.yml

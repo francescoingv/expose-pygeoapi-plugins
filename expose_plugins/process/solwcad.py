@@ -495,21 +495,10 @@ class SolwcadProcessor(BaseRemoteExecutionProcessorLocalReference):
         super().__init__(processor_def, PROCESS_METADATA)
         self.supports_outputs = True
 
-    def prepare_output(self, info, working_path: Path, outputs):
-        # Checks for error on outputs request performed by prepare_input().
+    def prepare_output(self, info, working_path: Path, req_outputs):
+        # Checks for error on outputs request performed by
+        # base class in execute().
 
-        # Common part to all prepare_output()
-        if isinstance(outputs, dict):
-            req_outputs = outputs
-        else:
-            req_outputs = {}
-            base_outputs = outputs if outputs else set(
-                self.metadata['outputs'].keys()
-            )
-            for output_id in base_outputs:
-                # set default transmissionMode
-                req_outputs[output_id] = {'transmissionMode': 'value'}
-                                    
         # Prepare outputs
         # ###############
 
@@ -560,7 +549,7 @@ class SolwcadProcessor(BaseRemoteExecutionProcessorLocalReference):
                 "for this job_id: {info['job_id']}."
             )
                 
-        return self.format_output(produced_outputs, outputs)
+        return self.format_output(produced_outputs, req_outputs)
 
     def prepare_input(self, inputData, working_path: Path, outputs):
         data = self.resolveInputData(inputData)

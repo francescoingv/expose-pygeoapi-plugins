@@ -28,6 +28,7 @@
 # =================================================================
 
 import base64
+import copy
 import logging
 import os
 from typing import Any, Optional, Tuple
@@ -209,33 +210,49 @@ class BaseRemoteExecutionProcessor(BaseProcessor):
         """
         raise NotImplementedError()
 
-    def _check_output_request(self, requested_output):
+    def _check_output_request(self, requested_output) -> dict:
+        """
+        Check for errors in output requested,
+        and return the expected outputs at the end of processing.
+        Currently checking:
+        -) name of outputs
+        -) property outputTransmission
+        """
+
         if not requested_output:
-           requested_output = set(self.metadata.get("outputs"))
-
-        allowed_modes = self.metadata.get("outputTransmission", [])
-        if isinstance(requested_output, dict):
-            for output_id, output_info in requested_output.items():
-                transmission_mode = output_info.get(
-                    "transmissionMode", "value"
-                )
-
-                if transmission_mode not in allowed_modes:
-                    raise ProcessorExecuteError(
-                        f"Invalid transmissionMode for {output_id}: "
-                        f"{transmission_mode}. Allowed values: "
-                        f"{allowed_modes}."
-                    )
-        else: # requested_output is a list, transmissionMode = default value
-            if "value" not in allowed_modes:
+            # Case of empty outputs.
+            # By default should return all outputs defined by the service
+            # with the "transmitionMode" set to "value" (the default)
+            expected_output = {
+                output: {"transmissionMode": "value"}
+                for output in self.metadata.get("outputs", [])
+            }
+        else:
+            # Checking for outputs not passed as dictionary:
+            if not isinstance(requested_output, dict):
                 raise ProcessorExecuteError(
-                    f"Invalid transmissionMode (default = 'value'). "
-                    f"Allowed values: {allowed_modes}."
+                    "Invalid outputs: required to be a dictionary."
+                )
+            expected_output = copy.deepcopy(requested_output)
+
+            # Checking for request of undefined outputs:
+            if set(expected_output) - set(self.metadata['outputs']):
+                err_msg = 'Outputs contains unexpected parameters.'
+                raise ProcessorExecuteError(err_msg)        
+
+        # Checking for valid transmissionMode parameter
+        allowed_modes = self.metadata.get("outputTransmission", [])
+        for output_id, output_info in expected_output.items():
+            transmission_mode = output_info.setdefault("transmissionMode", "value")
+
+            if transmission_mode not in allowed_modes:
+                raise ProcessorExecuteError(
+                    f"Invalid transmissionMode for {output_id}: "
+                    f"{transmission_mode}. Allowed values: "
+                    f"{allowed_modes}."
                 )
         
-        if set(requested_output) - set(self.metadata['outputs']):
-            err_msg = 'Outputs contains unexpected parameters.'
-            raise ProcessorExecuteError(err_msg)        
+        return expected_output
 
     def execute(self, data: dict, outputs: Optional[dict] = None
                 ) -> Tuple[str, Any]:
@@ -256,9 +273,9 @@ class BaseRemoteExecutionProcessor(BaseProcessor):
         os.mkdir(working_path, mode=0o755)
 
         try:
-        # check for error on outputs request:
-            self._check_output_request(outputs)
-            code_input_params = self.prepare_input(data, working_path, outputs)
+        # check for error on outputs request and get outputs to be provided:
+            expected_outputs = self._check_output_request(outputs)
+            code_input_params = self.prepare_input(data, working_path, expected_outputs)
         except BaseException as ex:
             shutil.rmtree(working_path)
             raise ex
@@ -328,7 +345,7 @@ class BaseRemoteExecutionProcessor(BaseProcessor):
             # do not remove working_dir for debugging purpose
             raise ProcessorExecuteError(message)
         
-        mimetype, process_outputs = self.prepare_output(info, working_path, outputs)
+        mimetype, process_outputs = self.prepare_output(info, working_path, expected_outputs)
         # content of working_dir no more usefull
         shutil.rmtree(working_path)
 

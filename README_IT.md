@@ -300,11 +300,11 @@ delle corrispondenti variabili d’ambiente.
 
 - `$SERVER_NAME_geoinquire$`  
   Nome del server su cui è fornito il framework pygeoapi  
-  (es. `localhost:5000`, `epos_geoinquire.pi.ingv.it`)
+  (es. `localhost:5000`, `voice.pi.ingv.it`)
 
 - `$LOCATION_epos_pygeoapi$`  
   Nome della location a cui è fornito il framework pygeoapi  
-  (es. stringa vuota oppure `epos_pygeoapi`)
+  (es. stringa vuota oppure `geoinquire`)
 
 ---
 

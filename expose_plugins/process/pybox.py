@@ -41,7 +41,7 @@ from pygeoapi.process.base import (
     ProcessorExecuteError,
     ProcessorGenericError,
 )
-from ingv_plugin_pygeoapi.process.base_remote_execution import (
+from expose_plugins.process.base_remote_execution import (
     BaseRemoteExecutionProcessorLocalReference,
     CHART_SCHEMA,
 )
@@ -394,10 +394,10 @@ PROCESS_METADATA = {
           }],
           'dt': 0.5, 'margin': 5000,
         },
-        'outputs': [
-            'input_data', 'dem', 'invasion_map', 'spatial_evolution',
-            'deposit_thickness'
-        ]
+        'outputs': {
+            'input_data': {}, 'dem': {}, 'invasion_map': {},
+             'spatial_evolution': {},'deposit_thickness': {}
+        }
       }
     },
     {
@@ -467,21 +467,10 @@ class PyboxProcessor(BaseRemoteExecutionProcessorLocalReference):
 
         self.base_output_filename = "out_file"
 
-    def prepare_output(self, info, working_path: Path, outputs):
-        # Checks for error on outputs request already performed.
+    def prepare_output(self, info, working_path: Path, req_outputs):
+        # Checks for error on outputs request performed by
+        # base class in execute().
 
-        # Common part to all prepare_output()
-        if isinstance(outputs, dict):
-            req_outputs = outputs
-        else:
-            req_outputs = {}
-            base_outputs = outputs if outputs else set(
-                self.metadata['outputs'].keys()
-            )
-            for output_id in base_outputs:
-                # set default transmissionMode
-                req_outputs[output_id] = {'transmissionMode': 'value'}
-                                    
         # Prepare outputs
         # ###############
         produced_outputs = {}
@@ -856,7 +845,7 @@ class PyboxProcessor(BaseRemoteExecutionProcessorLocalReference):
                 "for this job_id: {info['job_id']}."
             )
 
-        return self.format_output(produced_outputs, outputs)
+        return self.format_output(produced_outputs, req_outputs)
 
     def prepare_input(self, inputData, working_dir: Path, outputs):
         # Verify input parameters matching definitions.

@@ -24,3 +24,7 @@ classifiers = [
 include-package-data = true
 zip-safe = false
 
+[tool.setuptools.packages.find]
+include = ["expose_plugins*"]
+exclude = ["docker*"]
+

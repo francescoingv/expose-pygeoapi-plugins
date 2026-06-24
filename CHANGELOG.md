@@ -9,5 +9,9 @@ Metadata updates
 ## [1.0.2] - 2026-04-23
 Service updates
 
+## [1.1.0] - 2026-06-24
+Change package name.
+Minor fixes.
+
 
 
