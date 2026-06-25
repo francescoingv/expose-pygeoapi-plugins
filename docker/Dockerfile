@@ -1,19 +1,27 @@
 # ------------------------------------------------------------------------------
-# EPOS - pygeoapi container
+# Pygeoapi container
 #
 # This image:
 # - installs a custom pygeoapi plugin for project EXPOSE
 # - generates pygeoapi configuration at BUILD TIME
-# - binds EPOS processes (solwcad, conduit, pybox) via internal HTTP
+# - binds processes (solwcad, conduit, pybox) via internal HTTP
 #
 # IMPORTANT:
 # - All configuration is resolved during image build
 # - No runtime environment variables are expected
 # ------------------------------------------------------------------------------
 
-FROM geopython/pygeoapi:0.22.0
+FROM geopython/pygeoapi:latest
 
 LABEL maintainer="francesco.martinelli@ingv.it"
+
+# ------------------------------------------------------------------------------
+# System dependencies
+# ------------------------------------------------------------------------------
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends git \
+ && rm -rf /var/lib/apt/lists/*
+
 
 # ------------------------------------------------------------------------------
 # BUILD-TIME ARGUMENTS
@@ -36,6 +44,8 @@ ARG PORT_POSTGRES_SERVER
 # pygeoapi: resources common
 # ---------------------------------------------------------------------------
 ARG PYGEOAPI_BASE_PRIVATE_DIRECTORY
+ARG URL_HREF_RESULTS
+ARG LOCAL_DIR_HREF_RESULTS
 
 # ---------------------------------------------------------------------------
 # pygeoapi: process.solwcad
@@ -66,6 +76,8 @@ RUN for v in \
   PORT_POSTGRES_SERVER \
   PYGEOAPI_OUTPUT_DIR \
   PYGEOAPI_BASE_PRIVATE_DIRECTORY \
+  URL_HREF_RESULTS \
+  LOCAL_DIR_HREF_RESULTS \
   SOLWCAD_URL_BASE \
   SOLWCAD_SERVICE_ID \
   CONDUIT_URL_BASE \
@@ -73,7 +85,8 @@ RUN for v in \
   PYBOX_URL_BASE \
   PYBOX_SERVICE_ID \
 ; do \
-  test -n "$(eval echo \$$v)" || (echo "<<ERROR>> Required build argument '$v' not set." && exit 1); \
+  eval "value=\${$v:-}"; \
+  test -n "$value" || { echo "<<ERROR>> Required build argument '$v' not set."; exit 1; }; \
 done
 
 # ==============================================================================
@@ -84,31 +97,44 @@ RUN mkdir -p "${PYGEOAPI_BASE_PRIVATE_DIRECTORY}"
 
 
 # ==============================================================================
-# Installazione plugin custom for project EXPOSE
+# Installazione plugin EXPOSE pygeoapi
 # ==============================================================================
-WORKDIR /expose_plugins
-COPY ./expose_plugins ./
+WORKDIR /opt
+
+RUN git clone https://github.com/francescoingv/expose-pygeoapi-plugins.git
+
+WORKDIR /opt/expose-pygeoapi-plugins
+
 RUN python3 -m pip install --no-cache-dir --break-system-packages -e .
+
 
 # ==============================================================================
 # pygeoapi configuration
 # ==============================================================================
 WORKDIR /pygeoapi
-COPY ./my.pygeoapi.config.yml ./local.config.yml
+RUN cp /opt/expose-pygeoapi-plugins/docker/my.pygeoapi.config.yml ./local.config.yml
 
+RUN echo "URL_HREF_RESULTS = ${URL_HREF_RESULTS}"
+RUN echo "LOCAL_DIR_HREF_RESULTS = ${LOCAL_DIR_HREF_RESULTS}"
 
 # Substitute configuration parameters:
-RUN sed -i 's|\$SERVER_NAME\$|'${SERVER_NAME}'|g'                                  ./local.config.yml \
- && sed -i 's|\$SERVER_LOCATION\$|'${SERVER_LOCATION}'|g'                   ./local.config.yml \
+RUN sed -i 's|\$SERVER_NAME\$|'${SERVER_NAME}'|g'                                         ./local.config.yml \
+ && sed -i 's|\$SERVER_LOCATION\$|'${SERVER_LOCATION}'|g'                                 ./local.config.yml \
  && sed -i 's|\$IP_ADDRESS_POSTGRES_SERVER\$|'${IP_ADDRESS_POSTGRES_SERVER}'|g'           ./local.config.yml \
  && sed -i 's|\$PORT_POSTGRES_SERVER\$|'${PORT_POSTGRES_SERVER}'|g'                       ./local.config.yml \
  && sed -i 's|\$PYGEOAPI_OUTPUT_DIR\$|'${PYGEOAPI_OUTPUT_DIR}'|g'                         ./local.config.yml \
  && sed -i 's|\$PYGEOAPI_BASE_PRIVATE_DIRECTORY\$|'${PYGEOAPI_BASE_PRIVATE_DIRECTORY}'|g' ./local.config.yml \
  && sed -i 's|\$SOLWCAD_URL_BASE\$|'${SOLWCAD_URL_BASE}'|g'                               ./local.config.yml \
  && sed -i 's|\$SOLWCAD_SERVICE_ID\$|'${SOLWCAD_SERVICE_ID}'|g'                           ./local.config.yml \
+ && sed -i 's|\$SOLWCAD_URL_HREF_RESULTS\$|'${URL_HREF_RESULTS}'|g'                       ./local.config.yml \
+ && sed -i 's|\$SOLWCAD_DIR_HREF_RESULTS\$|'${LOCAL_DIR_HREF_RESULTS}'|g'                 ./local.config.yml \
  && sed -i 's|\$CONDUIT_URL_BASE\$|'${CONDUIT_URL_BASE}'|g'                               ./local.config.yml \
- && sed -i 's#\$CONDUIT_SERVICE_ID\$#'${CONDUIT_SERVICE_ID}'#g'                           ./local.config.yml \
- && sed -i 's#\$PYBOX_URL_BASE\$#'${PYBOX_URL_BASE}'#g'                                   ./local.config.yml \
- && sed -i 's#\$PYBOX_SERVICE_ID\$#'${PYBOX_SERVICE_ID}'#g'                               ./local.config.yml
+ && sed -i 's|\$CONDUIT_SERVICE_ID\$|'${CONDUIT_SERVICE_ID}'|g'                           ./local.config.yml \
+ && sed -i 's|\$CONDUIT_URL_HREF_RESULTS\$|'${URL_HREF_RESULTS}'|g'                       ./local.config.yml \
+ && sed -i 's|\$CONDUIT_DIR_HREF_RESULTS\$|'${LOCAL_DIR_HREF_RESULTS}'|g'                 ./local.config.yml \
+ && sed -i 's|\$PYBOX_URL_BASE\$|'${PYBOX_URL_BASE}'|g'                                   ./local.config.yml \
+ && sed -i 's|\$PYBOX_SERVICE_ID\$|'${PYBOX_SERVICE_ID}'|g'                               ./local.config.yml \
+ && sed -i 's|\$PYBOX_URL_HREF_RESULTS\$|'${URL_HREF_RESULTS}'|g'                         ./local.config.yml \
+ && sed -i 's|\$PYBOX_DIR_HREF_RESULTS\$|'${LOCAL_DIR_HREF_RESULTS}'|g'                   ./local.config.yml
 
 
