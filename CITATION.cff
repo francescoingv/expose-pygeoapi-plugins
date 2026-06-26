@@ -7,6 +7,7 @@ authors:
   - family-names: Martinelli
     given-names: Francesco
     affiliation: Istituto Nazionale di Geofisica e Vulcanologia (INGV)
+    orcid: https://orcid.org/0000-0002-0014-9417
 
 repository-code: https://github.com/francescoingv/expose-pygeoapi-plugins
 url: https://github.com/francescoingv/expose-pygeoapi-plugins
