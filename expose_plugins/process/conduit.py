@@ -731,7 +731,7 @@ PROCESS_METADATA = {
             "\"geometry\": {\"value\": {\"g\": \"conduit\", \"l\": 4000.0e0} }, "
             "\"searching_mode\": {\"value\": {\"f\": 0.88393e8} } "
           "},"
-          "\"outputs\":[\"gas\",\"velocity\"]}'"
+          "\"outputs\": {\"gas\": {},\"velocity\": {} } }'"
       )
     },
     {
