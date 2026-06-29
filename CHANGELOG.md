@@ -13,5 +13,8 @@ Service updates
 Change package name.
 Minor fixes.
 
+## [1.1.1] - 2026-06-29
+Fixed reference to pygeoapi project.
+
 
 

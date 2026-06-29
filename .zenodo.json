@@ -10,8 +10,8 @@
     }
   ],
   "license": "MIT",
-  "version": "1.1.0",
-  "publication_date": "2026-06-24",
+  "version": "1.1.1",
+  "publication_date": "2026-06-29",
   "access_right": "open",
   "language": "eng",
   "keywords": [
@@ -41,6 +41,13 @@
       "identifier": "10.5281/zenodo.18920969",
       "resource_type": "software",
       "scheme": "doi"
-    }
+    },
+    {
+      "_comment": "Underlying framework used by the process plugins",
+      "relation": "references",
+      "identifier": "10.5281/zenodo.5999665",
+      "resource_type": "software",
+      "scheme": "doi"
+    }    
   ]
 }

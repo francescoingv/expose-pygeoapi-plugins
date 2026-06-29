@@ -449,7 +449,7 @@ This platform builds on:
 
 **pygeoapi**\
 https://github.com/geopython/pygeoapi\
-DOI: https://doi.org/10.5281/zenodo.121585259
+DOI: https://doi.org/10.5281/zenodo.5999665
 
 
 ---

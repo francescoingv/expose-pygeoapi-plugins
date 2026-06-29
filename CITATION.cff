@@ -26,11 +26,16 @@ keywords:
   - process services
 
 license: MIT
-version: 1.1.0
-date-released: 2026-06-24
+version: 1.1.1
+date-released: 2026-06-29
 doi: 10.5281/zenodo.18892819
 
 references:
+  - type: software
+    title: pygeoapi
+    doi: 10.5281/zenodo.5999665
+    url: https://github.com/geopython/pygeoapi
+    
   - type: software
     title: EXPOSE (EXecutables for OGC API PrOcesses and Scientific Environments) platform
     repository-code: https://github.com/francescoingv/expose-pygeoapi-platform
