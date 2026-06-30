@@ -291,7 +291,7 @@ PROCESS_METADATA = {
   'id': 'solwcad',
   # type string
 
-  'version': '1.0.0',
+  'version': '1.0.1',
   # type string
 
   # Optional properties:
@@ -400,20 +400,42 @@ PROCESS_METADATA = {
       'minOccurs': 1,
       'maxOccurs': 1,
       'schema': {
-        'type': 'array',
-        'minItems': 1,
-        'items': {
-          'type': 'array',
-          'minItems': 15,
-          'maxItems': 15,
-          'items': {
-            'type': 'string',
-            'pattern':
-              r"^([+-]?(?:[[:digit:]]+\.|[[:digit:]]*\."
-              r"[[:digit:]]+))(?:[Dd][+-]?[[:digit:]]+)?$",
+        'oneOf': [
+          {
+            'title': 'JSON Array',
+            'type': 'array',
+            'minItems': 1,
+            'items': {
+              'type': 'array',
+              'minItems': 15,
+              'maxItems': 15,
+              'items': {
+                'type': 'string',
+                'pattern':
+                  r"^([+-]?(?:[[:digit:]]+\.|[[:digit:]]*\."
+                  r"[[:digit:]]+))(?:[Dd][+-]?[[:digit:]]+)?$",
+              }
+            },
+            'contentMediaType': 'application/json'
+          },
+          {
+            'title': 'Plain text Array',
+            'type': 'array',
+            'minItems': 1,
+            'items': {
+              'type': 'array',
+              'minItems': 15,
+              'maxItems': 15,
+              'items': {
+                'type': 'string',
+                'pattern':
+                  r"^([+-]?(?:[[:digit:]]+\.|[[:digit:]]*\."
+                  r"[[:digit:]]+))(?:[Dd][+-]?[[:digit:]]+)?$",
+              }
+            },
+            'contentMediaType': 'text/plain'
           }
-        },
-        'contentMediaType': 'application/json'
+        ]
       }
     }
   },
@@ -436,6 +458,13 @@ PROCESS_METADATA = {
               '.0027', '.0146', '.0006', '.0118', '.0232', '.0378', '.0306'
             ]
           ]
+        },
+        'outputs': {
+          'solwcad_out': {
+            'format': {
+              'mediaType': 'text/plain'
+            }
+          }
         }
       }
     },
@@ -452,7 +481,8 @@ PROCESS_METADATA = {
             "\".0132\",\".0378\",\".0306\"],"
             "[\"2.00d8\",\"1173.\",\".0200\",\".0010\","
             "\".7053\",\".0032\",\".1301\",\".0027\",\".0146\",\".0006\","
-            "\".0118\",\".0232\",\".0378\",\".0306\"]]}}'"
+            "\".0118\",\".0232\",\".0378\",\".0306\"]]}, "
+            "\"outputs\":{\"solwcad_out\":{\"format\":{\"mediaType\":\"text/plain\"}}}}'"
         )
     },
     {
@@ -467,16 +497,8 @@ PROCESS_METADATA = {
     }
   ]
 
-    # curl localhost:5000/processes/solwcad/execution
-    #     -H 'Content-Type: application/json'
-    #     -d '{ "inputs" : {  "swinput.data" : { "value" :
-    #         { "ndat1" : 1 , "ndat2" : 2 , "kl" : 0 } },
-    #         "sw.data" : [ [ "1.00d8" , "1273." , ".0400" ,
-    #         ".0200" , ".7653" , ".0032" , ".1201" , ".0027" , ".0246" ,
-    #         ".0006" , ".0018" , ".0132" , ".0378" , ".0306" ],
-    #         [ "2.00d8" , "1173." , ".0200" , ".0010" ,
-    #         ".7053" , ".0032" , ".1301" , ".0027" , ".0146" , ".0006" ,
-    #         ".0118" , ".0232" , ".0378" , ".0306" ] ] } }
+    # curl localhost:5000/processes/solwcad/execution -H 'Content-Type: application/json' -d '{"inputs": {"swinput.data": {"value": {"ndat1": 1, "ndat2": 2, "kl": 0}}, "sw.data": [["1.00d8", "1273.", ".0400", ".0200", ".7653", ".0032", ".1201", ".0027", ".0246", ".0006", ".0018", ".0132", ".0378", ".0306"], ["2.00d8", "1173.", ".0200", ".0010", ".7053", ".0032", ".1301", ".0027", ".0146", ".0006", ".0118", ".0232", ".0378", ".0306"] ] } }'
+    # curl localhost:5000/processes/solwcad/execution -H 'Content-Type: application/json' -d '{"inputs": {"swinput.data": {"value": {"ndat1": 1, "ndat2": 2, "kl": 0}}, "sw.data": [["1.00d8", "1273.", ".0400", ".0200", ".7653", ".0032", ".1201", ".0027", ".0246", ".0006", ".0018", ".0132", ".0378", ".0306"], ["2.00d8", "1173.", ".0200", ".0010", ".7053", ".0032", ".1301", ".0027", ".0146", ".0006", ".0118", ".0232", ".0378", ".0306"] ] }, "outputs": {"solwcad_out": {"format": {"mediaType": "text/plain"} } } }'
     #
     # curl -k -L -X POST "https://voice.pi.ingv.it/geoinquire/processes/solwcad/execution" -H "Content-Type: application/json" -d '{ "inputs" : {  "swinput.data" : { "value" : { "ndat1" : 1 , "ndat2" : 2 , "kl" : 0 } }, "sw.data" : [ [ "1.00d8" , "1273." , ".0400" , ".0200" , ".7653" , ".0032" , ".1201" , ".0027" , ".0246" , ".0006" , ".0018" , ".0132" , ".0378" , ".0306" ], [ "2.00d8" , "1173." , ".0200" , ".0010" , ".7053" , ".0032" , ".1301" , ".0027" , ".0146" , ".0006" , ".0118" , ".0232" , ".0378" , ".0306" ] ] } }'
     #
@@ -519,25 +541,53 @@ class SolwcadProcessor(BaseRemoteExecutionProcessorLocalReference):
         produced_outputs = {}
         try:
             if 'solwcad_out' in req_outputs:
-                value = solwcad_out
-                produced_outputs['solwcad_out'] = {'mediaType': 'application/json'}
+                format = req_outputs.get("solwcad_out").get("format")
+                if format is None:
+                    # set to default
+                    # (TODO: get first contentMediaType for the output_ID)
+                    mediaType = 'application/json'
+                elif not isinstance(format, dict):
+                    raise ProcessorExecuteError(
+                        "Invalid output parameter: format is not a dictionary."
+                    )
+                else:
+                    mediaType = format.get("mediaType", 'application/json')
+
+                # (TODO: get accepted mediaType from contentMediaType)
+                if mediaType not in ["application/json", "text/plain"]:
+                    # set to default
+                    # (TODO: get first contentMediaType for the output_ID)
+                    mediaType = 'application/json'
+
+                produced_outputs['solwcad_out'] = {'mediaType': mediaType}
+
+                if mediaType == "application/json":
+                    value = solwcad_out
+                elif mediaType == "text/plain":
+                    value = "\n".join(", ".join(row) for row in solwcad_out)
+                else: # should never happen:
+                    raise ProcessorExecuteError("Program error.")
+                
                 transmission_mode = req_outputs['solwcad_out'].get(
                     'transmissionMode', ''
                 )
                 if transmission_mode == "value":
                     produced_outputs['solwcad_out']['value'] =  value
                 elif (transmission_mode == "reference"):
-                    dst_file = Path(self.base_reference_path) / (
-                        f"{self.job_id}_solwcad_out.json"
-                    )
-
-                    with open(dst_file, 'w', encoding='utf-8') as json_file:
-                        json.dump(value, json_file)
-
-                    file_href = (
-                        f"{self.base_reference_url}"
-                        f"{self.job_id}_solwcad_out.json"
-                    )
+                    if mediaType == "application/json":
+                        filename = f"{self.job_id}_solwcad_out.json"
+                        dst_file = Path(self.base_reference_path) / filename
+                        with open(dst_file, 'w', encoding='utf-8') as out_file:
+                            json.dump(value, out_file)
+                    elif mediaType == "text/plain":
+                        filename = f"{self.job_id}_solwcad_out.txt"
+                        dst_file = Path(self.base_reference_path) / filename
+                        with open(dst_file, 'w', encoding='utf-8') as out_file:
+                            out_file.write(value)
+                    else: # should never happen:
+                        raise ProcessorExecuteError("Program error.")
+                    
+                    file_href = f"{self.base_reference_url}/{filename}"
                     produced_outputs['solwcad_out']['href'] = file_href
                 else: # should never happen: cheched in _check_output_request()
                     raise ProcessorExecuteError("Program error.")
