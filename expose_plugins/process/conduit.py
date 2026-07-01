@@ -267,7 +267,8 @@ INPUT_SCHEMA = {
       "type": "object",
       'oneOf': [
         {
-          'description': '',
+          'title': '[placeholder per titolo 1]',
+          'description': '[placeholder per description 1]',
           'required': ['d'],
           "additionalProperties": False,
           'properties': {
@@ -289,7 +290,8 @@ INPUT_SCHEMA = {
           }
         },
         {
-          'description': '',
+          'title': '[placeholder per titolo 2]',
+          'description': '[placeholder per description 2]',
           'required': ['f'],
           "additionalProperties": False,
           'properties': {

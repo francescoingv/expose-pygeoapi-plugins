@@ -58,6 +58,7 @@ INPUT_SCHEMA = {
       "type": "object",
       'oneOf': [
         {
+          'title': '[placeholder per titolo 1]',
           'description':
             'The computation is performed at user-defined P-T '
             'conditions in sw.data. H2O and CO2 contents in '
@@ -98,6 +99,7 @@ INPUT_SCHEMA = {
           }
         },
         {
+          'title': '[placeholder per titolo 2]',
           'description':
             'The computation is performed with reference to '
             'item ndat1 in sw.data, at constant user-defined '
@@ -142,6 +144,7 @@ INPUT_SCHEMA = {
           }
         },
         {
+          'title': '[placeholder per titolo 3]',
           'description':
             'Same as for kl=1, but for fixed P (from sw.data) '
             'and T from the item ndat1 in sw.data to a '
@@ -206,6 +209,7 @@ INPUT_SCHEMA = {
           }
         },
         {
+          'title': '[placeholder per titolo 4]',
           'description':
             'H2O and CO2 in sw.data items represent amounts '
             'dissolved in the melt phase. For user-defined '

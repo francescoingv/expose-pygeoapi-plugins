@@ -388,7 +388,7 @@ PROCESS_METADATA = {
     {
       'payload_example': {
         'inputs': {
-          'lon': 90.88, 'lat': 14.47, 'l0': 150, 'h0': 150, 'theta0': 500,
+          'lon': 14.428, 'lat': 40.820, 'l0': 150, 'h0': 150, 'theta0': 500,
           'multiple_values': [{
             'eps0': 0.01, 'rhos': 1000, 'ds': 0.0001
           }],
@@ -405,7 +405,7 @@ PROCESS_METADATA = {
           "curl -k -L -X POST "
           "\"https://voice.pi.ingv.it/geoinquire/processes/pybox/execution\" "
           "-H \"Content-Type: application/json\" "
-          "-d '{\"inputs\":{\"lon\":-90.88,\"lat\":15.47,\"l0\":150,\"h0\":150,"
+          "-d '{\"inputs\":{\"lon\":14.428,\"lat\":40.820,\"l0\":150,\"h0\":150,"
           "\"theta0\":500,\"multiple_values\":[{"
           "\"eps0\":0.01,\"rhos\":1000,\"ds\":0.0001}],"
           "\"dt\":0.5,\"margin\":5000},"
@@ -417,8 +417,8 @@ PROCESS_METADATA = {
           "curl -k -L -X POST "
           "\"https://voice.pi.ingv.it/geoinquire/processes/pybox/execution\" "
           "-H \"Content-Type: application/json\" "
-          "-d '{\"inputs\":{\"lon\":{\"value\":-90.88},"
-          "\"lat\":{\"value\":15.47},\"l0\":150,\"h0\":150,"
+          "-d '{\"inputs\":{\"lon\":{\"value\":14.428},"
+          "\"lat\":{\"value\":40.820},\"l0\":150,\"h0\":150,"
           "\"theta0\":500,\"multiple_values\":[{"
           "\"eps0\":0.01,\"rhos\":1000,\"ds\":0.0001}],"
           "\"dt\":0.5,\"margin\":5000},"
@@ -436,17 +436,17 @@ PROCESS_METADATA = {
           "\"https://voice.pi.ingv.it/jobs/<jobID>/results\"?f=json"
     }
   ]
-  # curl -k -L -X POST "https://voice.pi.ingv.it/geoinquire/processes/pybox/execution" -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" :  -90.88, "lat" : 15.47, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : ["input_data", "dem", "spatial_evolution"] }'
+  # curl -k -L -X POST "https://voice.pi.ingv.it/geoinquire/processes/pybox/execution" -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" : 14.428, "lat" : 40.820, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : ["input_data", "dem", "spatial_evolution"] }'
   # per asincrono aggiungere: -H "Prefer: respond-async"
 
   # curl localhost:5000/processes/pybox/execution 
   #       -H 'Content-Type: application/json' 
-  #       -d '{ "inputs" : { "lon" :  90.88, "lat" : 14.47, "l0" : 150, "h0" : 150, 
+  #       -d '{ "inputs" : { "lon" : 14.428, "lat" : 40.820, "l0" : 150, "h0" : 150, 
   #                          "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}], 
   #                          "dt" : 0.5, "margin" : 5000 }}'
-  # curl localhost:5000/processes/pybox/execution -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" :  -90.88, "lat" : 15.47, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : ["input_data", "dem", "spatial_evolution"] }'
-  # curl localhost:5000/processes/pybox/execution -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" :  { "value" : -90.88 }, "lat" : 15.47, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : ["input_data", "dem", "spatial_evolution"] }'
-  # curl localhost:5000/processes/pybox/execution -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" :  -90.88, "lat" : 15.47, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : {"input_data": { "transmissionMode": "value" }, "dem" : { "transmissionMode": "value" }, "spatial_evolution": { "transmissionMode": "value" } } }'
+  # curl localhost:5000/processes/pybox/execution -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" : 14.428, "lat" : 40.820, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : ["input_data", "dem", "spatial_evolution"] }'
+  # curl localhost:5000/processes/pybox/execution -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" : { "value" : 14.428 }, "lat" : 40.820, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : ["input_data", "dem", "spatial_evolution"] }'
+  # curl localhost:5000/processes/pybox/execution -H 'Content-Type: application/json' -d '{ "inputs" : { "lon" : "lon" : 14.428, "lat" : 40.820, "l0" : 150, "h0" : 150, "theta0" : 500, "multiple_values" : [{"eps0": 0.01, "rhos": 1000, "ds": 0.0001}],"dt" : 0.5, "margin" : 5000 }, "outputs" : {"input_data": { "transmissionMode": "value" }, "dem" : { "transmissionMode": "value" }, "spatial_evolution": { "transmissionMode": "value" } } }'
   #
 }
 
@@ -732,7 +732,7 @@ class PyboxProcessor(BaseRemoteExecutionProcessorLocalReference):
                         f"{self.base_reference_url}"
                         f"{self.job_id}_spatial_evolution.json"
                     )
-                    produced_outputs['invasion_map']['href'] = file_href
+                    produced_outputs['spatial_evolution']['href'] = file_href
                 else: # should never happen: cheched in _check_output_request()
                     raise ProcessorExecuteError("Program error.")
 
