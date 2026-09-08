@@ -270,7 +270,7 @@ INPUT_SCHEMA = {
       'oneOf': [
         {
           'title': 'mass flow rate',
-          'description': '[placeholder per description 1]',
+          'description': 'The algorithm searches for the mass flow rate for a given conduit diameter/fissure',
           'required': ['d'],
           'additionalProperties': False,
           'properties': {
@@ -293,7 +293,7 @@ INPUT_SCHEMA = {
         },
         {
           'title': 'conduit diameter',
-          'description': '[placeholder per description 2]',
+          'description': 'The algorithm searches for the conduit diameter/fissure for a given mass flow rate',
           'required': ['f'],
           'additionalProperties': False,
           'properties': {
