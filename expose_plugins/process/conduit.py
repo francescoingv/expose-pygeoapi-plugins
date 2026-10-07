@@ -49,8 +49,8 @@ LOGGER = logging.getLogger(__name__)
 INPUT_SCHEMA = {
   '$schema': 'https://json-schema.org/draft/2020-12/schema',
   '$id': 'https://example.com/schemas/conduit_plugin_schema.json',
-  'title': 'Conduit Input Schema',
-  'description': 'Schema for Conduit plugin inputs',
+  'title': 'Conduit4 Input Schema',
+  'description': 'Schema for Conduit4 plugin inputs',
   'type': 'object',
   'required': ['melt_composition', 'volatiles', 'crystals', 'fragmentation',
                'pressure_temperature', 'geometry', 'searching_mode'],
@@ -69,71 +69,71 @@ INPUT_SCHEMA = {
           'type': 'number',
           'title': 'SiO2',
           'description': 'Weight fraction of SiO2.',
-          'exclusiveMinimum': 0.0,
-          'exclusiveMaximum': 1.0
+          'minimum': 0.0,
+          'maximum': 1.0
         },
         'tio2': {
           'type': 'number',
           'title': 'TiO2',
           'description': 'Weight fraction of TiO2',
-          'exclusiveMinimum': 0.0,
-          'exclusiveMaximum': 1.0
+          'minimum': 0.0,
+          'maximum': 1.0
         },
         'al2o3': {
           'type': 'number',
           'title': 'Al2O3',
           'description': 'Weight fraction of Al2O3',
-          'exclusiveMinimum': 0.0,
-          'exclusiveMaximum': 1.0
+          'minimum': 0.0,
+          'maximum': 1.0
         },
         'fe2o3': {
           'type': 'number',
           'title': 'Fe2O3',
           'description': 'Weight fraction of Fe2O3',
-          'exclusiveMinimum': 0.0,
-          'exclusiveMaximum': 1.0
+          'minimum': 0.0,
+          'maximum': 1.0
         },
         'feo': {
           'type': 'number',
           'title': 'FeO',
           'description': 'Weight fraction of FeO',
-          'exclusiveMinimum': 0.0,
-          'exclusiveMaximum': 1.0
+          'minimum': 0.0,
+          'maximum': 1.0
         },
         'mno': {
           'type': 'number',
           'title': 'MnO',
           'description': 'Weight fraction of MnO',
-          'exclusiveMinimum': 0.0,
-          'exclusiveMaximum': 1.0
+          'minimum': 0.0,
+          'maximum': 1.0
         },
         'mgo': {
           'type': 'number',
           'title': 'MgO',
           'description': 'Weight fraction of MgO',
-          'exclusiveMinimum': 0.0,
-          'exclusiveMaximum': 1.0
+          'minimum': 0.0,
+          'maximum': 1.0
         },
         'cao': {
           'type': 'number',
           'title': 'CaO',
           'description': 'Weight fraction of CaO',
-          'exclusiveMinimum': 0.0,
-          'exclusiveMaximum': 1.0
+          'minimum': 0.0,
+          'maximum': 1.0
         },
         'na2o': {
           'type': 'number',
           'title': 'Na2O',
           'description': 'Weight fraction of Na2O',
-          'exclusiveMinimum': 0.0,
-          'exclusiveMaximum': 1.0
+          'minimum': 0.0,
+          'maximum': 1.0
         },
         'k2o': {
           'type': 'number',
           'title': 'K2O',
           'description': 'Weight fraction of K2O',
-          'exclusiveMinimum': 0.0,
-          'exclusiveMaximum': 1.0
+          'minimum': 0.0,
+          'maximum': 1.0
         },
       }
     },
@@ -147,15 +147,15 @@ INPUT_SCHEMA = {
           'type': 'number',
           'title': 'H2O',
           'description': 'Weight fraction of total H2O',
-          'exclusiveMinimum': 0.0,
-          'exclusiveMaximum': 1.0
+          'minimum': 0.0,
+          'maximum': 1.0
         },
         'co2': {
           'type': 'number',
           'title': 'CO2',
           'description': 'Weight fraction of total CO2',
-          'exclusiveMinimum': 0.0,
-          'exclusiveMaximum': 1.0
+          'minimum': 0.0,
+          'maximum': 1.0
         },
       }
     },
@@ -333,7 +333,7 @@ PROCESS_METADATA = {
   'id': 'conduit',
   # type string
 
-  'version': '2.2.1',
+  'version': '2.2.2',
   # type string
 
   # Optional properties:
@@ -492,7 +492,7 @@ PROCESS_METADATA = {
   # Optional properties:
   # ####################
 
-  'title': 'CONDUIT',
+  'title': 'CONDUIT4',
   # type: string
 
   'description':
