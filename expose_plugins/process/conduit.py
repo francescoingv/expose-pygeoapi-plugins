@@ -170,7 +170,7 @@ INPUT_SCHEMA = {
           'title': 'Crystal volume fraction',
           'description':
             'Volume fraction of crystals relative to a degassed magma.',
-          'exclusiveMinimum': 0.0,
+          'minimum': 0.0,
           'maximum': 0.7
         },
         'den': {
