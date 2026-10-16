@@ -593,13 +593,13 @@ class SolwcadProcessor(BaseRemoteExecutionProcessorLocalReference):
                 if format is None:
                     # set to default
                     # (TODO: get first contentMediaType for the output_ID)
-                    mediaType = 'application/json'
+                    mediaType = 'text/plain'
                 elif not isinstance(format, dict):
                     raise ProcessorExecuteError(
                         'Invalid output parameter: format is not a dictionary.'
                     )
                 else:
-                    mediaType = format.get('mediaType', 'application/json')
+                    mediaType = format.get('mediaType', 'text/plain')
 
                 # (TODO: get accepted mediaType from contentMediaType)
                 if mediaType not in ['application/json', 'text/plain']:
@@ -671,9 +671,18 @@ class SolwcadProcessor(BaseRemoteExecutionProcessorLocalReference):
                 swinput['fopen'] = swinput['dt'] = swinput['tlimit'] = '0.0'
             case 1:
                 swinput['iopen'] = iopen = int(iopen)
-                swinput['fopen'] = fopen = str(fopen)
                 if (iopen == 1):
-                    pass
+                    if fopen is None:
+                      descrizione_fopen = next(
+                        ramo
+                        for ramo in self.metadata['inputs']['swinput.data']
+                            ['schema']['oneOf']
+                        if kl in ramo['properties']['kl']['enum']
+                      )['properties']['fopen']['description']
+                      err_msg = (
+                          f'Missing required parameter: {descrizione_fopen}.')
+                      raise ProcessorExecuteError(err_msg)
+                    swinput['fopen'] = fopen = str(fopen)
                 else:
                     swinput['fopen'] = '0.0'
 
