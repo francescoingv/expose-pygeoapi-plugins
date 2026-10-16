@@ -392,9 +392,19 @@ PROCESS_METADATA = {
   'title': 'SOLWCAD',
   # type: string
 
-  'description':
-    'Fortran code to compute the saturation surface of H\u2082O-CO\u2082 '
-    'fluids in silicate melts of arbitrary composition.',
+  'description': {
+    'en': (
+      'Fortran code to compute the saturation surface of H\u2082O-CO\u2082 '
+      'fluids in silicate melts of arbitrary composition.'
+    ),
+    'it': (
+      'Codice Fortran per calcolare la superficie di saturazione dei '
+      'fluidi H\u2082O-CO\u2082 in fusi silicatici di composizione arbitraria.'
+    ),
+  },
+#  'description':
+#    'Fortran code to compute the saturation surface of H\u2082O-CO\u2082 '
+#    'fluids in silicate melts of arbitrary composition.',
   # type: string
 
   'keywords': ['Fortran code', 'saturation surface', 'other keywords...'],
