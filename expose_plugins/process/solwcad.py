@@ -678,7 +678,7 @@ class SolwcadProcessor(BaseRemoteExecutionProcessorLocalReference):
                         for ramo in self.metadata['inputs']['swinput.data']
                             ['schema']['oneOf']
                         if kl in ramo['properties']['kl']['enum']
-                      )['properties']['fopen']['description']
+                      )['properties']['fopen']['title']
                       err_msg = (
                           f'Missing required parameter: {descrizione_fopen}.')
                       raise ProcessorExecuteError(err_msg)
