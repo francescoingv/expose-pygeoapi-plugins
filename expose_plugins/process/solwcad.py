@@ -501,7 +501,7 @@ PROCESS_METADATA = {
   
   'examples': [
     {
-      'payload_example': {
+      'payload_example_1': {
         'inputs': {
           'swinput.data': {
             'value': {'ndat1': 1, 'ndat2': 2, 'kl': 0}
@@ -525,6 +525,45 @@ PROCESS_METADATA = {
           }
         }
       }
+    },
+    {
+      'payload_example_2': {
+        "inputs": {
+          "swinput.data": {
+            "value": {
+              "kl": 1,
+              "ndat1": 1,
+              "iopen": 0
+            }
+          },
+          "sw.data": [
+            [
+              "5.d8",
+              "1323.15",
+              "0.1",
+              "0.01",
+              ".5012",
+              ".0235",
+              ".1228",
+              ".0377",
+              ".0773",
+              ".0013",
+              ".1116",
+              ".0966",
+              ".0209",
+              ".0041"
+            ]
+          ]
+        },
+        "outputs": {
+          "solwcad_out": {
+            "format": {
+              "mediaType": "text/plain"
+            },
+            "transmissionMode": "value"
+          }
+        }
+      },
     },
     {
         'curl_example': (
