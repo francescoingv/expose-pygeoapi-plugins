@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "expose-pygeoapi-plugins"
-version = "1.1.0"
-description = "Plugins for pygeoapi process services developed as part of the EXPOSE platform project"
+version = "1.2.1"
+description = "Plugins for pygeoapi process services developed as part of the EXPOSE platform project."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.12"
@@ -16,6 +16,7 @@ authors = [
 
 classifiers = [
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent"
 ]

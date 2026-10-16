@@ -770,12 +770,12 @@ PROCESS_METADATA = {
     {
       'curl_jobStatus_request': 
           'curl -k -L '
-          '"https://voice.pi.ingv.it/geoinquire/jobs/<jobID>"'
+          '"https://voice.pi.ingv.it/geoinquire/jobs/JOB_ID"'
     },
     {
       'curl_jobResults_request': 
           'curl -k -L '
-          '"https://voice.pi.ingv.it/geoinquire/jobs/<jobID>/results\?f=json"'
+          '"https://voice.pi.ingv.it/geoinquire/jobs/JOB_ID/results?f=json"'
     }
   ]
 

@@ -65,7 +65,8 @@ framework will solve issue on returning reference only)
 Changed the schema for 'solwcad_out' accordingly.
 
 ## [1.2.1] - 2026-??-??
-Minor fix to PostgreSQLManagerWithDelete.delete_job()
+Removed PostgreSQLManagerWithDelete: now BaseProcessor.remove_resources()
+is called from the default PostgreSQLManager.
 
 In BaseRemoteExecutionProcessor, fixed format_output()
 to properly handle binary output (e.g. Tiff or png)

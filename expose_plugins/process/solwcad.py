@@ -76,7 +76,7 @@ INPUT_SCHEMA = {
       'type': 'object',
       'oneOf': [
         {
-          'title': 'Saturation surface for water and CO2',
+          'title': 'Saturation surface for water and CO\u2082',
           'description':
             'The computation is performed at user-defined P-T '
             'conditions in sw.data. H2O and CO2 contents in '
