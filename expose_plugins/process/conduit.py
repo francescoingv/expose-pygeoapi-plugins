@@ -67,29 +67,29 @@ INPUT_SCHEMA = {
       'properties': {
         'sio2': {
           'type': 'number',
-          'title': 'SiO2',
-          'description': 'Weight fraction of SiO2.',
+          'title': 'SiO\u2082',
+          'description': 'Weight fraction of SiO\u2082.',
           'minimum': 0.0,
           'maximum': 1.0
         },
         'tio2': {
           'type': 'number',
-          'title': 'TiO2',
-          'description': 'Weight fraction of TiO2',
+          'title': 'TiO\u2082',
+          'description': 'Weight fraction of TiO\u2082',
           'minimum': 0.0,
           'maximum': 1.0
         },
         'al2o3': {
           'type': 'number',
-          'title': 'Al2O3',
-          'description': 'Weight fraction of Al2O3',
+          'title': 'Al\u2082O\u2083',
+          'description': 'Weight fraction of Al\u2082O\u2083',
           'minimum': 0.0,
           'maximum': 1.0
         },
         'fe2o3': {
           'type': 'number',
-          'title': 'Fe2O3',
-          'description': 'Weight fraction of Fe2O3',
+          'title': 'Fe\u2082O\u2083',
+          'description': 'Weight fraction of Fe\u2082O\u2083',
           'minimum': 0.0,
           'maximum': 1.0
         },
@@ -123,15 +123,15 @@ INPUT_SCHEMA = {
         },
         'na2o': {
           'type': 'number',
-          'title': 'Na2O',
-          'description': 'Weight fraction of Na2O',
+          'title': 'Na\u2082O',
+          'description': 'Weight fraction of Na\u2082O',
           'minimum': 0.0,
           'maximum': 1.0
         },
         'k2o': {
           'type': 'number',
-          'title': 'K2O',
-          'description': 'Weight fraction of K2O',
+          'title': 'K\u2082O',
+          'description': 'Weight fraction of K\u2082O',
           'minimum': 0.0,
           'maximum': 1.0
         },
@@ -145,15 +145,15 @@ INPUT_SCHEMA = {
       'properties': {
         'h2o': {
           'type': 'number',
-          'title': 'H2O',
-          'description': 'Weight fraction of total H2O',
+          'title': 'H\u2082O',
+          'description': 'Weight fraction of total H\u2082O',
           'minimum': 0.0,
           'maximum': 1.0
         },
         'co2': {
           'type': 'number',
-          'title': 'CO2',
-          'description': 'Weight fraction of total CO2',
+          'title': 'CO\u2082',
+          'description': 'Weight fraction of total CO\u2082',
           'minimum': 0.0,
           'maximum': 1.0
         },
@@ -509,7 +509,7 @@ PROCESS_METADATA = {
     'exit, with the alternative being part of the solution thus depending on '
     'the selected conditions. The numerical algorithm searches for such an '
     'exit condition by adapting the mass flow-rate to the selected conduit '
-    'diameter. Thermodynamic equilibrium phase between the gas (H2O+CO2) and '
+    'diameter. Thermodynamic equilibrium phase between the gas (H\u2082O+CO\u2082) and '
     'the silicate melt is calculated through the SOLWCAD model '
     '(Papale et al., 2006, [Chemical Geology, 229(1-3), 78-95]), '
     'implemented within CONDUIT4. Magma fragmentation is determined based on '
@@ -626,10 +626,10 @@ PROCESS_METADATA = {
         '4) gas velocity [m/s];'
         '5) liquid velocity [m/s];'
         '6) pressure [MPa];'
-        '7) dissolved H2O [mass %];'
-        '8) dissolved CO2 [mass %];'
-        '9) gas H2O [mass %];'
-        '10) gas CO2 [mass %];'
+        '7) dissolved H\u2082O [mass %];'
+        '8) dissolved CO\u2082 [mass %];'
+        '9) gas H\u2082O [mass %];'
+        '10) gas CO\u2082 [mass %];'
         '11)  gas before fragmentation [mass %];'
         '12)  crystals [volume %];'
         '13) crystals [mass %];'

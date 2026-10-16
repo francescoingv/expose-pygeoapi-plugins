@@ -79,7 +79,7 @@ INPUT_SCHEMA = {
           'title': 'Saturation surface for water and CO\u2082',
           'description':
             'The computation is performed at user-defined P-T '
-            'conditions in sw.data. H2O and CO2 contents in '
+            'conditions in sw.data. H\u2082O and CO\u2082 contents in '
             'sw.data refer to total amounts in the two-phase '
             'magma, or to (mass of volatile component) / '
             '(mass of melt + fluid phases). '
@@ -121,7 +121,7 @@ INPUT_SCHEMA = {
           }
         },
         {
-          'title': 'Saturation surface for water and CO2 at varying pressure (from P to atmospheric)',
+          'title': 'Saturation surface for water and CO\u2082 at varying pressure (from P to atmospheric)',
           'description':
             'The computation is performed with reference to '
             'item ndat1 in sw.data, at constant user-defined '
@@ -171,7 +171,7 @@ INPUT_SCHEMA = {
           }
         },
         {
-          'title': 'Saturation surface for water and CO2 at varying temperature (from T to user-defined tlimit)',
+          'title': 'Saturation surface for water and CO\u2082 at varying temperature (from T to user-defined tlimit)',
           'description':
             'Same as for kl=1, but for fixed P (from sw.data) '
             'and T from the item ndat1 in sw.data to a '
@@ -243,9 +243,9 @@ INPUT_SCHEMA = {
           }
         },
         {
-          'title': 'Equilibrium pressure and fluid phase composition given dissolved water and CO2 in the magma',
+          'title': 'Equilibrium pressure and fluid phase composition given dissolved water and CO\u2082 in the magma',
           'description':
-            'H2O and CO2 in sw.data items represent amounts '
+            'H\u2082O and CO\u2082 in sw.data items represent amounts '
             'dissolved in the melt phase. For user-defined '
             'melt composition and temperature, SOLWCAD '
             'returns the equilibrium pressure and composition '
@@ -292,12 +292,12 @@ INPUT_SCHEMA = {
         'user-defined conditions in terms of pressure, temperature, '
         'and composition, each one arranged on a single item. Each '
         'item contains the followings: pressure (Pa); '
-        'temperature (K); H2O content (wt fraction)**; '
-        'CO2 content (wt fraction)**; the following ten quantities '
+        'temperature (K); H\u2082O content (wt fraction)**; '
+        'CO\u2082 content (wt fraction)**; the following ten quantities '
         'specify the volatile-free melt composition (wt fraction)***, '
-        'in the following order: SiO2; TiO2; Al2O3; Fe2O3; FeO; MnO; '
-        'MgO; CaO; Na2O; K2O. '
-        '**H2O and CO2 contents may refer to i) total amounts in the '
+        'in the following order: SiO\u2082; TiO\u2082; Al\u2082O\u2083; Fe\u2082O\u2083; FeO; MnO; '
+        'MgO; CaO; Na\u2082O; K\u2082O. '
+        '**H\u2082O and CO\u2082 contents may refer to i) total amounts in the '
         'two-phase magma, equal to (mass of volatile in the '
         'fluid + mass of volatile dissolved in the melt) / (mass of '
         'the gas phase + mass of the melt phase); or ii) the amounts '
@@ -375,7 +375,7 @@ PROCESS_METADATA = {
     'rel': 'describedby',
     'type': 'text/html',
     'hreflang': 'en-US',
-    'title': 'The compositional dependence of the saturation surface of H2O + CO2 fluids in silicate melts'
+    'title': 'The compositional dependence of the saturation surface of H\u2082O + CO\u2082 fluids in silicate melts'
   }],
   # type: array, 
   #   items: {type: object, required: 'href', properties:
@@ -393,7 +393,7 @@ PROCESS_METADATA = {
   # type: string
 
   'description':
-    'Fortran code to compute the saturation surface of H2O-CO2 '
+    'Fortran code to compute the saturation surface of H\u2082O-CO\u2082 '
     'fluids in silicate melts of arbitrary composition.',
   # type: string
 
@@ -433,11 +433,11 @@ PROCESS_METADATA = {
       'description':
         'Each record item contains the following quantities: '
         'Pressure (Mpa); Temperature (K); Total ( kl >0) or '
-        'dissolved ( kl =-1) H2O (wt%); '
-        'Total ( kl >0) or dissolved ( kl =-1) CO2 (wt%); '
-        'H2O dissolved in the melt (wt%); '
-        'CO2 dissolved in the melt (ppm); CO2 in the fluid (wt%); '
-        'CO2 in the fluid (mol%); Amount of fluid phase '
+        'dissolved ( kl =-1) H\u2082O (wt%); '
+        'Total ( kl >0) or dissolved ( kl =-1) CO\u2082 (wt%); '
+        'H\u2082O dissolved in the melt (wt%); '
+        'CO\u2082 dissolved in the melt (ppm); CO\u2082 in the fluid (wt%); '
+        'CO\u2082 in the fluid (mol%); Amount of fluid phase '
         'in magma (wt%); Amount of fluid phase in magma (vol%); '
         'Density of the melt phase (kg/m3 ); Density of the gas '
         'phase (kg/m3 ); Density of the two-phase magma (kg/m3 ); '
