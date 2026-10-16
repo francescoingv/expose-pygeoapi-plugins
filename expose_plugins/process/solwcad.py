@@ -448,23 +448,6 @@ PROCESS_METADATA = {
       'schema': {
         'oneOf': [
           {
-            'title': 'JSON Array',
-            'type': 'array',
-            'minItems': 1,
-            'items': {
-              'type': 'array',
-              'minItems': 15,
-              'maxItems': 15,
-              'items': {
-                'type': 'string',
-                'pattern': rf'^{NUMBER_PATTERN}$',
-#                  r'^([+-]?(?:[[:digit:]]+\.|[[:digit:]]*\.'
-#                  r'[[:digit:]]+))(?:[Dd][+-]?[[:digit:]]+)?$',
-              }
-            },
-#            'contentMediaType': 'application/json'
-          },
-          {
             'title': 'Plain text Array',
 #            'type': 'array',
 #            'minItems': 1,
@@ -482,7 +465,24 @@ PROCESS_METADATA = {
             'type': 'string',
             'pattern': TABLE_PATTERN,
             'contentMediaType': 'text/plain'
-          }
+          },
+          {
+            'title': 'JSON Array',
+            'type': 'array',
+            'minItems': 1,
+            'items': {
+              'type': 'array',
+              'minItems': 15,
+              'maxItems': 15,
+              'items': {
+                'type': 'string',
+                'pattern': rf'^{NUMBER_PATTERN}$',
+#                  r'^([+-]?(?:[[:digit:]]+\.|[[:digit:]]*\.'
+#                  r'[[:digit:]]+))(?:[Dd][+-]?[[:digit:]]+)?$',
+              }
+            },
+#            'contentMediaType': 'application/json'
+          },
         ]
       }
     }
